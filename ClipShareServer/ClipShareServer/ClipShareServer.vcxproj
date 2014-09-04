@@ -76,8 +76,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ClipShareServerMain.cpp" />
-    <ClCompile Include="ClipShareService.cpp" />
+    <ClCompile Include="ClipShareServerMain.c" />
+    <ClCompile Include="ClipShareService.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClipShareService.h" />

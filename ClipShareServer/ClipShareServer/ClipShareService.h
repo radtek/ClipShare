@@ -1,31 +1,33 @@
 #ifndef CLIP_SHARE_SERVICE_HEADER
 #define CLIP_SHARE_SERVICE_HEADER
 
-#include <string>
-#include <Windows.h>
-#include <winsvc.h>
+#include <windows.h>
 
-class CClipShareService
-{
-	private:
-		std::wstring m_serviceName;
-		SERVICE_TABLE_ENTRY m_serviceTable[2];
-		SERVICE_STATUS m_serviceStatus;
-		SERVICE_STATUS_HANDLE m_serviceStatusHandle;
 
-	public:
-		static VOID WINAPI ServiceMain(DWORD, LPWSTR *);
-		static VOID WINAPI ServiceCtrlHandler(DWORD);
-		static DWORD WINAPI ServiceWorker(LPVOID);
+/* ***DEFINES*** */
 
-		CClipShareService(std::wstring);
-		std::wstring GetServiceName();
+#define SERVICE_NAME			TEXT("ClipShareService")
+#define SERVICE_INIT_SUCCESS	0x0000000
 
-		bool InitService();
+/* *** */
 
-		void ClipShareServiceMain(DWORD, LPWSTR *);
-		void ClipShareServiceCtrlHandler(DWORD);
-		DWORD ClipShareServiceWorker(LPVOID);
-};
+
+/* ***Globals*** */
+
+SERVICE_STATUS serviceStatus;
+SERVICE_STATUS_HANDLE serviceStatusHandle;
+
+/* *** */
+
+
+/* ***Functions*** */
+
+DWORD InitService();
+
+VOID WINAPI ServiceMain(DWORD, LPWSTR *);
+VOID WINAPI ServiceCtrlHandler(DWORD);
+DWORD WINAPI ServiceWorker(LPVOID);
+
+/* *** */
 
 #endif
