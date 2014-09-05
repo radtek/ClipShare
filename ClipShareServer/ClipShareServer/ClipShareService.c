@@ -2,6 +2,11 @@
 
 #include "ClipShareService.h"
 
+extern DWORD InitServerListener();
+
+SERVICE_STATUS serviceStatus;
+SERVICE_STATUS_HANDLE serviceStatusHandle;
+
 DWORD InitService()
 {
 	SERVICE_TABLE_ENTRY ServiceTable[] = {{SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)ServiceMain}
@@ -30,7 +35,14 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 
 		if(SetServiceStatus(serviceStatusHandle, &serviceStatus))
 		{
-			CreateThread(NULL, 0, ServiceWorker, NULL, 0, NULL);
+			if(!InitServerListener())
+			{
+				//Do something
+			}
+		}
+		else
+		{
+			//Do something
 		}
 	}
 }

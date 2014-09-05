@@ -12,14 +12,6 @@
 /* *** */
 
 
-/* ***Globals*** */
-
-SERVICE_STATUS serviceStatus;
-SERVICE_STATUS_HANDLE serviceStatusHandle;
-
-/* *** */
-
-
 /* ***Functions*** */
 
 DWORD InitService();
