@@ -2,6 +2,8 @@
 #include <WinSock2.h>
 #include <windows.h>
 
+#include "Logger.h"
+
 #define	SERVER_LISTENER_PORT	7489
 
 HANDLE hListenerThread;
@@ -14,8 +16,8 @@ DWORD WINAPI ServerListenerThread(LPVOID lpParam)
 
 	if(WSAStartup(MAKEWORD(2,2), &wsaData))
 	{
-		//Do something
-		return -1;
+		LogMessage("WSAStartup failed.");
+		return 0;
 	}
 
 	saServer.sin_family = AF_INET;
@@ -25,26 +27,26 @@ DWORD WINAPI ServerListenerThread(LPVOID lpParam)
 	sockServer = socket(AF_INET, SOCK_STREAM, 0);
 	if(sockServer == INVALID_SOCKET)
 	{
-		//Do something
-		return -1;
+		LogMessage("Unable to create server socket.");
+		return 0;
 	}
 
 	if(bind(sockServer, (struct sockaddr *)&saServer, sizeof(saServer)))
 	{
-		//Do something
-		return -1;
+		LogMessage("Unable to bind server socket to port.");
+		return 0;
 	}
 
 	if(listen(sockServer, 5))
 	{
-		//Do something
-		return -1;
+		LogMessage("Unable to set server socket in listening mode.");
+		return 0;
 	}
 
 	closesocket(sockServer);
 	WSACleanup();
 
-	return 0;
+	return 1;
 }
 
 DWORD InitServerListener()
@@ -53,7 +55,9 @@ DWORD InitServerListener()
 
 	if(!hListenerThread)
 	{
-		//Do something
+		LogMessage("Unable to start server listener thread.s");
 		return 0;
 	}
+
+	return 1;
 }
