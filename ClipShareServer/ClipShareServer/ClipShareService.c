@@ -1,16 +1,27 @@
 #include <windows.h>
 
+#include "Logger.h"
 #include "ClipShareService.h"
 
-DWORD InitService()
+extern DWORD InitServerListener();
+
+SERVICE_STATUS serviceStatus;
+SERVICE_STATUS_HANDLE serviceStatusHandle;
+
+VOID WINAPI ServiceCtrlHandler(DWORD dwControlCode)
 {
-	SERVICE_TABLE_ENTRY ServiceTable[] = {{SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)ServiceMain}
-										  , {NULL, NULL}};
+	switch(dwControlCode)
+	{
+		case SERVICE_CONTROL_STOP:{
+									LogMessage("Service shutting down.");
+									CloseLogger();						
 
-	if(!StartServiceCtrlDispatcher(ServiceTable))
-		return GetLastError();
-
-	return SERVICE_INIT_SUCCESS;
+									serviceStatus.dwControlsAccepted = 0;
+									serviceStatus.dwCurrentState = SERVICE_STOPPED;
+									SetServiceStatus(serviceStatusHandle, &serviceStatus);
+								  }
+								  break;
+	}
 }
 
 VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
@@ -30,22 +41,34 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 
 		if(SetServiceStatus(serviceStatusHandle, &serviceStatus))
 		{
-			CreateThread(NULL, 0, ServiceWorker, NULL, 0, NULL);
+			if(!InitServerListener())
+			{
+				LogMessage("");
+			}
+		}
+		else
+		{
+			LogMessage("");
 		}
 	}
 }
 
-VOID WINAPI ServiceCtrlHandler(DWORD dwControlCode)
+BOOL InitAndStartService()
 {
-	switch(dwControlCode)
+	SERVICE_TABLE_ENTRY ServiceTable[] = {{SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)ServiceMain}
+										  , {NULL, NULL}};
+
+	InitLogger("e:\\logcsserver.txt");
+
+	if(!StartServiceCtrlDispatcher(ServiceTable))
 	{
-		case SERVICE_CONTROL_STOP:{
-									serviceStatus.dwControlsAccepted = 0;
-									serviceStatus.dwCurrentState = SERVICE_STOPPED;
-									SetServiceStatus(serviceStatusHandle, &serviceStatus);
-								  }
-								  break;
+		LogMessage("Unable to start service.");
+		CloseLogger();
+
+		return FALSE;
 	}
+
+	return TRUE;
 }
 
 DWORD WINAPI ServiceWorker(LPVOID lpParam)

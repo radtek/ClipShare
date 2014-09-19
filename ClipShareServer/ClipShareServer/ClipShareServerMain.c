@@ -1,12 +1,13 @@
-#include <windows.h>
-#include <winsvc.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "ClipShareService.h"
 
 int main()
 {
-	DWORD dwServiceInitRetCode = InitService();
+	if(!InitAndStartService())
+		return EXIT_FAILURE;
 
-	return dwServiceInitRetCode;
+	return EXIT_SUCCESS;
 }
 

@@ -12,21 +12,9 @@
 /* *** */
 
 
-/* ***Globals*** */
-
-SERVICE_STATUS serviceStatus;
-SERVICE_STATUS_HANDLE serviceStatusHandle;
-
-/* *** */
-
-
 /* ***Functions*** */
 
-DWORD InitService();
-
-VOID WINAPI ServiceMain(DWORD, LPWSTR *);
-VOID WINAPI ServiceCtrlHandler(DWORD);
-DWORD WINAPI ServiceWorker(LPVOID);
+BOOL InitAndStartService();
 
 /* *** */
 
