@@ -26,7 +26,6 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwControlCode)
 
 VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 {
-	serviceStatus;
 	serviceStatusHandle = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceCtrlHandler);
 	
 	if(serviceStatusHandle)
@@ -41,14 +40,12 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 
 		if(SetServiceStatus(serviceStatusHandle, &serviceStatus))
 		{
-			if(!InitServerListener())
-			{
-				LogMessage("");
-			}
+			LogMessage("Service started.");
+			InitServerListener();
 		}
 		else
 		{
-			LogMessage("");
+			LogMessage("Failed to set service to running state.");
 		}
 	}
 }
@@ -69,9 +66,4 @@ BOOL InitAndStartService()
 	}
 
 	return TRUE;
-}
-
-DWORD WINAPI ServiceWorker(LPVOID lpParam)
-{
-	return 0;
 }
