@@ -8,17 +8,22 @@ extern DWORD InitServerListener();
 SERVICE_STATUS serviceStatus;
 SERVICE_STATUS_HANDLE serviceStatusHandle;
 
+void StopService()
+{
+	LogMessage("Service shutting down.");
+	CloseLogger();						
+
+	serviceStatus.dwControlsAccepted = 0;
+	serviceStatus.dwCurrentState = SERVICE_STOPPED;
+	SetServiceStatus(serviceStatusHandle, &serviceStatus);
+}
+
 VOID WINAPI ServiceCtrlHandler(DWORD dwControlCode)
 {
 	switch(dwControlCode)
 	{
 		case SERVICE_CONTROL_STOP:{
-									LogMessage("Service shutting down.");
-									CloseLogger();						
-
-									serviceStatus.dwControlsAccepted = 0;
-									serviceStatus.dwCurrentState = SERVICE_STOPPED;
-									SetServiceStatus(serviceStatusHandle, &serviceStatus);
+									StopService();
 								  }
 								  break;
 	}
@@ -31,8 +36,8 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 	if(serviceStatusHandle)
 	{
 		serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-		serviceStatus.dwCurrentState = SERVICE_RUNNING;
-		serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+		serviceStatus.dwCurrentState = SERVICE_START_PENDING;
+		serviceStatus.dwControlsAccepted = 0;
 		serviceStatus.dwWin32ExitCode = 0;
 		serviceStatus.dwServiceSpecificExitCode = 0;
 		serviceStatus.dwWaitHint = 0;
@@ -40,12 +45,26 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 
 		if(SetServiceStatus(serviceStatusHandle, &serviceStatus))
 		{
-			LogMessage("Service started.");
-			InitServerListener();
+			LogMessage("Service starting.");
+
+			if(!InitServerListener())
+			{
+				LogMessage("Unable to start server listener thread. Service will not start.");
+				StopService();
+			}
+			else
+			{
+				serviceStatus.dwCurrentState = SERVICE_RUNNING;
+				serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+				SetServiceStatus(serviceStatusHandle, &serviceStatus);
+
+				LogMessage("Service started.");
+			}
 		}
 		else
 		{
 			LogMessage("Failed to set service to running state.");
+			CloseLogger();
 		}
 	}
 }
@@ -55,7 +74,7 @@ BOOL InitAndStartService()
 	SERVICE_TABLE_ENTRY ServiceTable[] = {{SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)ServiceMain}
 										  , {NULL, NULL}};
 
-	InitLogger("e:\\logcsserver.txt");
+	InitLogger("d:\\logcsserver.txt");
 
 	if(!StartServiceCtrlDispatcher(ServiceTable))
 	{

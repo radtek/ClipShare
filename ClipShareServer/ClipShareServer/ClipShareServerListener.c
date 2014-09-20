@@ -54,10 +54,7 @@ DWORD InitServerListener()
 	hListenerThread = CreateThread(NULL, 0, ServerListenerThread, NULL, 0, NULL);
 
 	if(!hListenerThread)
-	{
-		LogMessage("Unable to start server listener thread.s");
 		return 0;
-	}
 
 	return 1;
 }
