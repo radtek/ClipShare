@@ -2,11 +2,10 @@
 
 #include "Logger.h"
 #include "ClipShareService.h"
-
-extern DWORD InitServerListener();
+#include "ClipShareServerListener.h"
 
 SERVICE_STATUS serviceStatus;
-SERVICE_STATUS_HANDLE serviceStatusHandle;
+SERVICE_STATUS_HANDLE hServiceStatus;
 
 void StopService()
 {
@@ -15,7 +14,7 @@ void StopService()
 
 	serviceStatus.dwControlsAccepted = 0;
 	serviceStatus.dwCurrentState = SERVICE_STOPPED;
-	SetServiceStatus(serviceStatusHandle, &serviceStatus);
+	SetServiceStatus(hServiceStatus, &serviceStatus);
 }
 
 VOID WINAPI ServiceCtrlHandler(DWORD dwControlCode)
@@ -31,9 +30,9 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwControlCode)
 
 VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 {
-	serviceStatusHandle = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceCtrlHandler);
+	hServiceStatus = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceCtrlHandler);
 	
-	if(serviceStatusHandle)
+	if(hServiceStatus)
 	{
 		serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
 		serviceStatus.dwCurrentState = SERVICE_START_PENDING;
@@ -43,20 +42,19 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPWSTR *argv)
 		serviceStatus.dwWaitHint = 0;
 		serviceStatus.dwCheckPoint = 0;
 
-		if(SetServiceStatus(serviceStatusHandle, &serviceStatus))
+		if(SetServiceStatus(hServiceStatus, &serviceStatus))
 		{
 			LogMessage("Service starting.");
 
 			if(!InitServerListener())
 			{
-				LogMessage("Unable to start server listener thread. Service will not start.");
 				StopService();
 			}
 			else
 			{
 				serviceStatus.dwCurrentState = SERVICE_RUNNING;
 				serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
-				SetServiceStatus(serviceStatusHandle, &serviceStatus);
+				SetServiceStatus(hServiceStatus, &serviceStatus);
 
 				LogMessage("Service started.");
 			}

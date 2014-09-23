@@ -83,6 +83,7 @@
     <ClCompile Include="Logger.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClipShareServerListener.h" />
     <ClInclude Include="ClipShareService.h" />
     <ClInclude Include="Logger.h" />
   </ItemGroup>

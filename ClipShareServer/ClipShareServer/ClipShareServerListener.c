@@ -3,14 +3,21 @@
 #include <windows.h>
 
 #include "Logger.h"
+#include "ClipShareServerListener.h"
 
 #define	SERVER_LISTENER_PORT	7489
 
-HANDLE hListenerThread;
+static HANDLE hServerThread;
+static SOCKET sockServer;
 
-DWORD WINAPI ServerListenerThread(LPVOID lpParam)
+void CleanServerListener()
 {
-	SOCKET sockServer;
+	closesocket(sockServer);
+	WSACleanup();
+}
+
+DWORD InitServerListenerWorker()
+{
 	WSADATA wsaData;
 	struct sockaddr_in saServer;
 
@@ -43,18 +50,28 @@ DWORD WINAPI ServerListenerThread(LPVOID lpParam)
 		return 0;
 	}
 
-	closesocket(sockServer);
-	WSACleanup();
-
 	return 1;
+}
+
+DWORD WINAPI ServerListenerThread(LPVOID lpParam)
+{
 }
 
 DWORD InitServerListener()
 {
-	hListenerThread = CreateThread(NULL, 0, ServerListenerThread, NULL, 0, NULL);
-
-	if(!hListenerThread)
+	if(!InitServerListenerWorker())
+	{
+		LogMessage("Unable to initialize socket. Service will stop.");
+		CleanServerListener();
 		return 0;
+	}
+
+	hServerThread = CreateThread(NULL, 0, ServerListenerThread, NULL, 0, NULL);
+	if(!hServerThread)
+	{
+		LogMessage("Unable to start server listener thread. Service will stop.");
+		return 0;
+	}
 
 	return 1;
 }
