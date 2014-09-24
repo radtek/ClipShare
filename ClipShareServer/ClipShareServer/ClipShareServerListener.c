@@ -7,7 +7,7 @@
 
 #define	SERVER_LISTENER_PORT	7489
 
-static HANDLE hServerThread;
+static HANDLE hServerListenerThread, hServerListenerWorkerThread;
 static SOCKET sockServer;
 
 void CleanServerListener()
@@ -55,6 +55,8 @@ DWORD InitServerListenerWorker()
 
 DWORD WINAPI ServerListenerThread(LPVOID lpParam)
 {
+	WaitForSingleObject(GetServiceStopEvt(), INFINITE);
+	CleanServerListener();
 }
 
 DWORD InitServerListener()
@@ -66,8 +68,8 @@ DWORD InitServerListener()
 		return 0;
 	}
 
-	hServerThread = CreateThread(NULL, 0, ServerListenerThread, NULL, 0, NULL);
-	if(!hServerThread)
+	hServerListenerThread = CreateThread(NULL, 0, ServerListenerThread, NULL, 0, NULL);
+	if(!hServerListenerThread)
 	{
 		LogMessage("Unable to start server listener thread. Service will stop.");
 		return 0;

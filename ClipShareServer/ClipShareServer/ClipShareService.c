@@ -4,13 +4,21 @@
 #include "ClipShareService.h"
 #include "ClipShareServerListener.h"
 
-SERVICE_STATUS serviceStatus;
-SERVICE_STATUS_HANDLE hServiceStatus;
+static SERVICE_STATUS serviceStatus;
+static SERVICE_STATUS_HANDLE hServiceStatus;
+static HANDLE hServiceStopEvt;
+
+HANDLE GetServiceStopEvt()
+{
+	return hServiceStopEvt;
+}
 
 void StopService()
 {
 	LogMessage("Service shutting down.");
 	CloseLogger();						
+
+	SetEvent(hServiceStopEvt);
 
 	serviceStatus.dwControlsAccepted = 0;
 	serviceStatus.dwCurrentState = SERVICE_STOPPED;

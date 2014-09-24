@@ -4,6 +4,7 @@
 /* *** Functions *** */
 
 DWORD InitServerListener();
+HANDLE GetServiceStopEvt();
 
 /* *** */
 
