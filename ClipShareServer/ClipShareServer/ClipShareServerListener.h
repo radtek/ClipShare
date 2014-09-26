@@ -5,6 +5,7 @@
 
 DWORD InitServerListener();
 HANDLE GetServiceStopEvt();
+void SignalServiceStop();
 
 /* *** */
 

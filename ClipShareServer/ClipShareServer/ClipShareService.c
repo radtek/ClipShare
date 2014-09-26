@@ -13,6 +13,11 @@ HANDLE GetServiceStopEvt()
 	return hServiceStopEvt;
 }
 
+void SignalServiceStop()
+{
+	StopService();
+}
+
 void StopService()
 {
 	LogMessage("Service shutting down.");
@@ -80,7 +85,7 @@ BOOL InitAndStartService()
 	SERVICE_TABLE_ENTRY ServiceTable[] = {{SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)ServiceMain}
 										  , {NULL, NULL}};
 
-	InitLogger("d:\\logcsserver.txt");
+	InitLogger("e:\\logcsserver.txt");
 
 	if(!StartServiceCtrlDispatcher(ServiceTable))
 	{

@@ -14,6 +14,7 @@ void CleanServerListener()
 {
 	closesocket(sockServer);
 	WSACleanup();
+	LogMessage("Server socket closed.");
 }
 
 DWORD InitServerListenerWorker()
@@ -50,11 +51,33 @@ DWORD InitServerListenerWorker()
 		return 0;
 	}
 
+	LogMessage("Server socket initialized. Will start listening for incoming connections.");
 	return 1;
+}
+
+DWORD WINAPI ServerListenerWorkerThread(LPVOID lpParam)
+{
+	LogMessage("Server waiting for incoming connections...");
+	LogMessage("Shutting down listener worker thread.");
 }
 
 DWORD WINAPI ServerListenerThread(LPVOID lpParam)
 {
+	hServerListenerWorkerThread = CreateThread(NULL, 0, ServerListenerWorkerThread, NULL, 0, NULL);
+	if(!hServerListenerWorkerThread)
+	{
+		LogMessage("Could not initialize server listener worker thread.");
+		SignalServiceStop();
+	}
+	else
+	{
+		SOCKET sockClient;
+		while(1)
+		{
+			//sockClient = accept(sockServer, ,);
+		}
+	}
+
 	WaitForSingleObject(GetServiceStopEvt(), INFINITE);
 	CleanServerListener();
 }
