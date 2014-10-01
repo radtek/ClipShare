@@ -2,20 +2,29 @@
 #define CLIP_SHARE_SERVICE_HEADER
 
 #include <windows.h>
+#include <string>
 
+#include "Logger.h"
 
-/* ***DEFINES*** */
+class ClipShareService
+{
+	private:
+		SERVICE_STATUS serviceStatus;
+		SERVICE_STATUS_HANDLE hServiceStatus;
+		HANDLE hServiceStopEvt;
+		Logger logger;
 
-#define SERVICE_NAME			TEXT("ClipShareService")
-#define SERVICE_INIT_SUCCESS	0x0000000
+		static VOID WINAPI ServiceMain(DWORD , LPWSTR *);
+		static VOID WINAPI ServiceCtrlHandler(DWORD);
 
-/* *** */
+	public:
+		ClipShareService() {}
 
+		int InitAndStartService();
+		void StopService();
 
-/* ***Functions*** */
-
-BOOL InitAndStartService();
-
-/* *** */
+		void CSServiceMain(DWORD ,LPWSTR *);
+		void CSServiceCtrlHandler(DWORD);
+};
 
 #endif

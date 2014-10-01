@@ -77,10 +77,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ClipShareServerListener.c" />
-    <ClCompile Include="ClipShareServerMain.c" />
-    <ClCompile Include="ClipShareService.c" />
-    <ClCompile Include="Logger.c" />
+    <ClCompile Include="ClipShareServerListener.cpp" />
+    <ClCompile Include="ClipShareServerMain.cpp" />
+    <ClCompile Include="ClipShareService.cpp" />
+    <ClCompile Include="Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClipShareServerListener.h" />

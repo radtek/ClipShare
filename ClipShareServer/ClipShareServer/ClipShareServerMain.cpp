@@ -1,11 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "ClipShareService.h"
 
 int main()
 {
-	if(!InitAndStartService())
+	ClipShareService cService;
+
+	if(!cService.InitAndStartService())
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;

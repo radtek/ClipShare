@@ -2,15 +2,20 @@
 #define	LOGGER_HEADER
 
 #include <windows.h>
+#include <string>
 
+class Logger
+{
+	private:
+		HANDLE hLogger;
+		static const int CUR_TIME_MAX_LENGTH = 20;
 
-/* ***Functions*** */
+	public:
+		Logger() {}
 
-void InitLogger(LPCSTR);
-void CloseLogger();
-
-void LogMessage(LPCSTR);
-
-/* *** */
+		void InitLogger(std::string);
+		void LogMessage(std::string);
+		void CloseLogger();
+};
 
 #endif
