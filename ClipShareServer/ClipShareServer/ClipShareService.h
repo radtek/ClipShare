@@ -5,13 +5,13 @@
 #include <string>
 
 #include "Logger.h"
+#include "ClipShareServerListener.h"
 
 class ClipShareService
 {
 	private:
 		SERVICE_STATUS serviceStatus;
 		SERVICE_STATUS_HANDLE hServiceStatus;
-		HANDLE hServiceStopEvt;
 		Logger logger;
 
 		static VOID WINAPI ServiceMain(DWORD , LPWSTR *);

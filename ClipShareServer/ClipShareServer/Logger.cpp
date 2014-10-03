@@ -20,15 +20,16 @@ void Logger::LogMessage(std::string sLogMsg)
 
 		GetSystemTime(&stCurTime);
 
-		std::stringstream ssCurTime;
+		std::ostringstream ssCurTime;
 		ssCurTime<<"["<<stCurTime.wDay<<"/"
 				 <<stCurTime.wMonth<<"/"
 				 <<stCurTime.wYear<<" "
-				 <<stCurTime.wHour<<"/"
-				 <<stCurTime.wMinute<<"/"
+				 <<stCurTime.wHour<<":"
+				 <<stCurTime.wMinute<<":"
 				 <<stCurTime.wSecond<<"] ";
-
-		LPCSTR strCurTime = ssCurTime.str().c_str();
+		
+		std::string tempCurTime = ssCurTime.str();
+		LPCSTR strCurTime = tempCurTime.c_str();
 		LPCSTR strLogMsg = sLogMsg.c_str();
 
 		WriteFile(hLogger, strCurTime, lstrlenA(strCurTime), &dwNumberOfBytesWritten, NULL);

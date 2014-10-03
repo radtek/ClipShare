@@ -1,16 +1,19 @@
 #include "ClipShareService.h"
-#include "ClipShareServerListener.h"
+
+static std::wstring sServiceName = L"ClipShareService";
 
 static ClipShareService *pService = NULL;
-static std::wstring sServiceName = L"ClipShareService";
+static ClipShareServerListener *pServerListener = NULL;
 
 int ClipShareService::InitAndStartService()
 {
-	logger.InitLogger("e:\\logcsserver.txt");
+	logger.InitLogger("d:\\logcsserver.txt");
 
 	SERVICE_TABLE_ENTRY ServiceTable[] = {{(LPWSTR)sServiceName.c_str(), (LPSERVICE_MAIN_FUNCTION)ServiceMain}
 										  , {NULL, NULL}};
 
+	pService = this;
+	
 	if(!StartServiceCtrlDispatcher(ServiceTable))
 	{
 		logger.LogMessage("Unable to start service.");
@@ -19,16 +22,17 @@ int ClipShareService::InitAndStartService()
 		return FALSE;
 	}
 
-	pService = this;
 	return TRUE;
 }
 
 void ClipShareService::StopService()
 {
+	pServerListener->SetServiceStopEvt();
+
+	Sleep(1000);
+
 	logger.LogMessage("Service shutting down.");
 	logger.CloseLogger();						
-
-	SetEvent(hServiceStopEvt);
 
 	serviceStatus.dwControlsAccepted = 0;
 	serviceStatus.dwCurrentState = SERVICE_STOPPED;
@@ -53,8 +57,8 @@ void ClipShareService::CSServiceMain(DWORD argc, LPWSTR *argv)
 		{
 			logger.LogMessage("Service starting.");
 
-			ClipShareServerListener cServerListener(&logger);
-			if(!cServerListener.InitServerListener())
+			pServerListener = new ClipShareServerListener(&logger);
+			if(!pServerListener->InitServerListener())
 			{
 				StopService();
 			}

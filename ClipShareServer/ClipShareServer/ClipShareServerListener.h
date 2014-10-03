@@ -12,11 +12,15 @@ class ClipShareServerListener
 		Logger logger;
 
 		DWORD InitServerListenerWorker();
-		
+		bool ProcessClient(SOCKET *);
+
 		static DWORD WINAPI ServerListenerThread(LPVOID);
 		static DWORD WINAPI ServerListenerWorkerThread(LPVOID);
 
 		static const int SERVER_LISTENER_PORT = 7489;
+
+		HANDLE hServiceStopEvt;
+		bool bServiceStopping;
 
 	public:
 		ClipShareServerListener(Logger *);
@@ -26,6 +30,8 @@ class ClipShareServerListener
 		
 		DWORD CSServerListenerThread(LPVOID);
 		DWORD CSServerListenerWorkerThread(LPVOID);
+
+		void SetServiceStopEvt();
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include <WinSock2.h>
+#include <WS2tcpip.h>
 #include <sstream>
 
 #include "ClipShareServerListener.h"
@@ -8,6 +9,14 @@ static ClipShareServerListener *pServerListener = NULL;
 ClipShareServerListener::ClipShareServerListener(Logger *_logger)
 {
 	logger = *_logger;
+	
+	hServiceStopEvt = NULL;
+	bServiceStopping = false;
+}
+
+void ClipShareServerListener::SetServiceStopEvt()
+{
+	SetEvent(hServiceStopEvt);
 }
 
 DWORD ClipShareServerListener::InitServerListenerWorker()
@@ -48,6 +57,11 @@ DWORD ClipShareServerListener::InitServerListenerWorker()
 	return 1;
 }
 
+bool ClipShareServerListener::ProcessClient(SOCKET *sockClient)
+{
+	return true;
+}
+
 DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 {
 	SOCKET sockClient;
@@ -58,7 +72,7 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 
 	logger.LogMessage("Server waiting for incoming connections...");
 
-	while(1)
+	while(!bServiceStopping)
 	{
 		iSAClientLen = sizeof(saClient);
 		ZeroMemory((void *)&saClient, iSAClientLen);
@@ -66,14 +80,11 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 		sockClient = accept(sockServer, &saClient, &iSAClientLen);
 		if(sockClient == INVALID_SOCKET)
 		{
-			std::stringstream ssAcceptErrorMsg;
-			ssAcceptErrorMsg<<sFailedAcceptErrorMsgText<<WSAGetLastError();
-
-			logger.LogMessage(ssAcceptErrorMsg.str().c_str());
+			continue;
 		}
 		else
 		{
-			//
+			ProcessClient(&sockClient);
 		}
 	}
 
@@ -91,13 +102,15 @@ DWORD ClipShareServerListener::CSServerListenerThread(LPVOID lpParam)
 	hServerListenerWorkerThread = CreateThread(NULL, 0, ServerListenerWorkerThread, NULL, 0, NULL);
 	if(!hServerListenerWorkerThread)
 	{
-		logger.LogMessage("Could not initialize server listener worker thread.");
-		//SignalServiceStop();
+		logger.LogMessage("Could not initialize server listener worker thread. Try restarting the service.");
+		return 0;
 	}
-
-	//WaitForSingleObject(GetServiceStopEvt(), INFINITE);
+	logger.LogMessage("Created server listener worker thread.");
+	
+	WaitForSingleObject(hServiceStopEvt, INFINITE);
+	bServiceStopping = true;
 	CleanServerListener();
-
+	
 	return 1;
 }
 
@@ -115,14 +128,24 @@ DWORD ClipShareServerListener::InitServerListener()
 		return 0;
 	}
 
+	pServerListener = this;
+
+	hServiceStopEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if(!hServiceStopEvt)
+	{
+		logger.LogMessage("Unable to create service stop event. Service will stop.");
+		return 0;
+	}
+	logger.LogMessage("Created service stop event.");
+
 	hServerListenerThread = CreateThread(NULL, 0, ServerListenerThread, NULL, 0, NULL);
 	if(!hServerListenerThread)
 	{
 		logger.LogMessage("Unable to start server listener thread. Service will stop.");
 		return 0;
 	}
+	logger.LogMessage("Created server listener thread.");
 
-	pServerListener = this;
 	return 1;
 }
 
