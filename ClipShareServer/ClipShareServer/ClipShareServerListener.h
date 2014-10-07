@@ -22,6 +22,8 @@ class ClipShareServerListener
 		HANDLE hServiceStopEvt;
 		bool bServiceStopping;
 
+		static ClipShareServerListener *pServerListener;
+
 	public:
 		ClipShareServerListener(Logger *);
 

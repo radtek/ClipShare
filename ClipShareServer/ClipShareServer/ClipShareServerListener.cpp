@@ -4,7 +4,7 @@
 
 #include "ClipShareServerListener.h"
 
-static ClipShareServerListener *pServerListener = NULL;
+ClipShareServerListener *ClipShareServerListener::pServerListener = NULL;
 
 ClipShareServerListener::ClipShareServerListener(Logger *_logger)
 {

@@ -17,6 +17,11 @@ class ClipShareService
 		static VOID WINAPI ServiceMain(DWORD , LPWSTR *);
 		static VOID WINAPI ServiceCtrlHandler(DWORD);
 
+		static ClipShareService *pService;
+		static ClipShareServerListener *pServerListener;
+		static std::wstring sServiceName;
+
+
 	public:
 		ClipShareService() {}
 

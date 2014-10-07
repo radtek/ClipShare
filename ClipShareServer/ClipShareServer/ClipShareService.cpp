@@ -1,9 +1,8 @@
 #include "ClipShareService.h"
 
-static std::wstring sServiceName = L"ClipShareService";
-
-static ClipShareService *pService = NULL;
-static ClipShareServerListener *pServerListener = NULL;
+std::wstring ClipShareService::sServiceName = L"ClipShareService";
+ClipShareService *ClipShareService::pService = NULL;
+ClipShareServerListener *ClipShareService::pServerListener = NULL;
 
 int ClipShareService::InitAndStartService()
 {
