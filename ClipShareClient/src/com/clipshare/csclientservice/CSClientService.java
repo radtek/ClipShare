@@ -1,14 +1,18 @@
 package com.clipshare.csclientservice;
 
-import com.clipshare.csserverconn.ServerConnectorProxy;
+import com.clipshare.common.Constants;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Messenger;
 
 public class CSClientService extends Service {
 	
-	private ServerConnectorProxy serverConnectorProxy = null;
+	private static boolean isRunning = false;
+	
+	private String ipAddress = null;
+	private Messenger messenger = null;
 	
 	public CSClientService() {
 		
@@ -16,26 +20,36 @@ public class CSClientService extends Service {
 	
 	@Override
 	public void onCreate() {
-		// TODO Auto-generated method stub
+		isRunning = false;
+		
 		super.onCreate();
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		// TODO Auto-generated method stub
+		if(!isRunning) {
+			ipAddress = (String)intent.getExtras().getString(Constants.IP_KEY);
+			messenger = (Messenger)intent.getExtras().get(Constants.MESSENGER_KEY);
+			
+			isRunning = true;
+		}
+	
 		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
 	public void onDestroy() {
-		// TODO Auto-generated method stub
+		isRunning = false;
+		
 		super.onDestroy();
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
+	public static boolean isRunning() {
+		return isRunning;
+	}
 }

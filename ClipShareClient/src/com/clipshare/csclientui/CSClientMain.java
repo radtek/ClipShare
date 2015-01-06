@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.clipshare.csclient.R;
+import com.clipshare.csserverconn.ServerConnectorProxy;
 
 public class CSClientMain extends ActionBarActivity implements View.OnClickListener {
 	
@@ -15,10 +16,14 @@ public class CSClientMain extends ActionBarActivity implements View.OnClickListe
 	private Button btConnect = null;
 	private Button btDisconnect = null;
 	
+	private ServerConnectorProxy connectorProxy = null;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_csclient_main);
+		
+		connectorProxy = new ServerConnectorProxy(this);
 		
 		initControls();
 	}
@@ -40,9 +45,13 @@ public class CSClientMain extends ActionBarActivity implements View.OnClickListe
 			return false;
 		
 		for (String octet : ipOctets) {
-			int octetVal = Integer.parseInt(octet);
-			if(octetVal < 0 || octetVal > 255)
+			try {
+				int octetVal = Integer.parseInt(octet);
+				if(octetVal < 0 || octetVal > 255)
+					return false;
+			} catch (NumberFormatException nfe) {
 				return false;
+			}
 		}
 		
 		return true;
@@ -58,6 +67,7 @@ public class CSClientMain extends ActionBarActivity implements View.OnClickListe
 	public void onClick(View v) {
 		switch(v.getId()) {
 			case R.id.btCSCMConnect:if(validateIpAddress(etIPAddress.getText().toString())) {
+										connectorProxy.handleConnectRequest(etIPAddress.getText().toString());
 										setAllControlsStatus(false);
 									} else {
 										Toast.makeText(getApplicationContext(), "Invalid IP address. Please check and try again.", Toast.LENGTH_LONG).show();
