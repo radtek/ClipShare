@@ -67,13 +67,14 @@ public class CSClientMain extends ActionBarActivity implements View.OnClickListe
 	public void onClick(View v) {
 		switch(v.getId()) {
 			case R.id.btCSCMConnect:if(validateIpAddress(etIPAddress.getText().toString())) {
-										connectorProxy.handleConnectRequest(etIPAddress.getText().toString());
 										setAllControlsStatus(false);
+										connectorProxy.handleConnectRequest(etIPAddress.getText().toString());
 									} else {
 										Toast.makeText(getApplicationContext(), "Invalid IP address. Please check and try again.", Toast.LENGTH_LONG).show();
 									}
 								    break;
-			case R.id.btCSCMDisconnect:setAllControlsStatus(true);
+			case R.id.btCSCMDisconnect:connectorProxy.handleDisconnectRequest();
+									   setAllControlsStatus(true);
 									   break;
 		}
 	}

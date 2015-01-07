@@ -1,5 +1,7 @@
 package com.clipshare.csclientservice;
 
+import java.util.concurrent.Semaphore;
+
 import com.clipshare.common.Constants;
 
 import android.app.Service;
@@ -9,10 +11,13 @@ import android.os.Messenger;
 
 public class CSClientService extends Service {
 	
-	private static boolean isRunning = false;
+	private static CSClientService thisService = null;
+	
+	private Semaphore serviceStopSemaphore = null;
 	
 	private String ipAddress = null;
 	private Messenger messenger = null;
+	private ConnCreator connCreator = null;
 	
 	public CSClientService() {
 		
@@ -20,18 +25,26 @@ public class CSClientService extends Service {
 	
 	@Override
 	public void onCreate() {
-		isRunning = false;
+		connCreator = null;
+		thisService = this;
+		serviceStopSemaphore = null;
 		
 		super.onCreate();
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if(!isRunning) {
+		if(!connCreator.isRunning()) {
 			ipAddress = (String)intent.getExtras().getString(Constants.IP_KEY);
 			messenger = (Messenger)intent.getExtras().get(Constants.MESSENGER_KEY);
 			
-			isRunning = true;
+			serviceStopSemaphore = new Semaphore(-1);
+			
+			Thread serviceStopListenerThread = new Thread(new ServiceStopListener(serviceStopSemaphore));
+			serviceStopListenerThread.start();
+
+			connCreator = new ConnCreator(ipAddress, serviceStopSemaphore);
+			connCreator.startThread();
 		}
 	
 		return super.onStartCommand(intent, flags, startId);
@@ -39,7 +52,15 @@ public class CSClientService extends Service {
 
 	@Override
 	public void onDestroy() {
-		isRunning = false;
+		if(connCreator != null) {
+			if(!connCreator.isRunning())
+				connCreator.stopThread();
+			
+			connCreator = null;
+		}
+		
+		thisService = null;
+		serviceStopSemaphore = null;
 		
 		super.onDestroy();
 	}
@@ -50,6 +71,25 @@ public class CSClientService extends Service {
 	}
 	
 	public static boolean isRunning() {
-		return isRunning;
+		return thisService.connCreator.isRunning();
+	}
+	
+	private class ServiceStopListener implements Runnable {
+		
+		private Semaphore stopSemaphore = null;
+		
+		public ServiceStopListener(Semaphore semaphore) {
+			stopSemaphore = semaphore;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				stopSemaphore.acquire();
+				CSClientService.this.stopSelf();
+			} catch (InterruptedException e) {
+				//
+			}
+		}
 	}
 }
