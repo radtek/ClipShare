@@ -14,6 +14,7 @@ public class CSClientService extends Service {
 	private static CSClientService thisService = null;
 	
 	private Semaphore serviceStopSemaphore = null;
+	private ServiceStopListener serviceStopListener = null;
 	
 	private String ipAddress = null;
 	private Messenger messenger = null;
@@ -25,41 +26,44 @@ public class CSClientService extends Service {
 	
 	@Override
 	public void onCreate() {
-		connCreator = null;
+		serviceStopSemaphore = new Semaphore(-1);
+		
+		serviceStopListener = new ServiceStopListener(serviceStopSemaphore);
+		connCreator = new ConnCreator(serviceStopSemaphore);
+		
 		thisService = this;
-		serviceStopSemaphore = null;
 		
 		super.onCreate();
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if(!connCreator.isRunning()) {
-			ipAddress = (String)intent.getExtras().getString(Constants.IP_KEY);
+		if(connCreator != null && !connCreator.isRunning()) {			
 			messenger = (Messenger)intent.getExtras().get(Constants.MESSENGER_KEY);
+			ipAddress = (String)intent.getExtras().getString(Constants.IP_KEY);
 			
-			serviceStopSemaphore = new Semaphore(-1);
-			
-			Thread serviceStopListenerThread = new Thread(new ServiceStopListener(serviceStopSemaphore));
+			Thread serviceStopListenerThread = new Thread(serviceStopListener);
 			serviceStopListenerThread.start();
-
-			connCreator = new ConnCreator(ipAddress, serviceStopSemaphore);
+			
+			connCreator.setIp(ipAddress);
 			connCreator.startThread();
 		}
-	
+		
 		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
 	public void onDestroy() {
 		if(connCreator != null) {
-			if(!connCreator.isRunning())
+			if(connCreator.isRunning())
 				connCreator.stopThread();
 			
 			connCreator = null;
 		}
 		
 		thisService = null;
+		
+		serviceStopListener = null;
 		serviceStopSemaphore = null;
 		
 		super.onDestroy();
@@ -88,7 +92,7 @@ public class CSClientService extends Service {
 				stopSemaphore.acquire();
 				CSClientService.this.stopSelf();
 			} catch (InterruptedException e) {
-				//
+				
 			}
 		}
 	}

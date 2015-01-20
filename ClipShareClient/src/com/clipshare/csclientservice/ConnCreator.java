@@ -15,8 +15,7 @@ public class ConnCreator implements Runnable {
 	private Socket clientSocket = null;
 	private Thread connCreatorThread = null;
 	
-	public ConnCreator(String ip, Semaphore semaphore) {
-		ipAddress = ip;
+	public ConnCreator(Semaphore semaphore) {
 		stopSemaphore = semaphore;
 	}
 	
@@ -40,6 +39,10 @@ public class ConnCreator implements Runnable {
 		}
 	}
 	
+	public void setIp(String ip) {
+		ipAddress = ip;
+	}
+	
 	public void startThread() {
 		connCreatorThread = new Thread(this);
 		connCreatorThread.start();
@@ -51,8 +54,9 @@ public class ConnCreator implements Runnable {
 		if(connCreatorThread != null)
 			connCreatorThread = null;
 		
-		stopSemaphore.release();
 		isRunning = false;
+		
+		stopSemaphore.release();
 	}
 	
 	public boolean isRunning() {
