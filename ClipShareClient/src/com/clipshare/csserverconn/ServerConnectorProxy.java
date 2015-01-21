@@ -2,6 +2,7 @@ package com.clipshare.csserverconn;
 
 import com.clipshare.common.Constants;
 import com.clipshare.csclientservice.CSClientService;
+import com.clipshare.csclientui.CSClientMain;
 
 import android.app.Activity;
 import android.content.*;
@@ -9,6 +10,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.widget.Toast;
 
 
 public class ServerConnectorProxy {
@@ -16,11 +18,11 @@ public class ServerConnectorProxy {
 	private Handler serviceMsgHandler = null;
 	private Intent serviceIntent = null;
 	
-	private Activity parentActivity = null; 
+	private CSClientMain parentActivity = null; 
 	
-	public ServerConnectorProxy(Activity mainActivity) {
+	public ServerConnectorProxy(CSClientMain mainActivity) {
 		serviceMsgHandler = new ServiceMessageHandler();
-		serviceIntent = new Intent(mainActivity.getApplicationContext(), CSClientService.class);
+		serviceIntent = new Intent(CSClientService.class.getName());
 		
 		parentActivity = mainActivity;
 	}

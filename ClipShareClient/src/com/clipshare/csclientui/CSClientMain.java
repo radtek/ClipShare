@@ -62,6 +62,10 @@ public class CSClientMain extends ActionBarActivity implements View.OnClickListe
 		etIPAddress.setEnabled(forConnect);
 		btDisconnect.setEnabled(!forConnect);
 	}
+	
+	public void handleServiceStop() {
+		setAllControlsStatus(true);
+	}
 
 	@Override
 	public void onClick(View v) {
