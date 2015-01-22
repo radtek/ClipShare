@@ -4,8 +4,12 @@ import com.clipshare.common.Constants;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
+import android.util.Log;
 
 public class CSClientService extends Service {
 	
@@ -21,8 +25,6 @@ public class CSClientService extends Service {
 	
 	@Override
 	public void onCreate() {
-		connCreator = new ConnCreator(this);
-		
 		thisService = this;
 		
 		super.onCreate();
@@ -30,18 +32,23 @@ public class CSClientService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if(connCreator != null && !connCreator.isRunning()) {			
-			messenger = (Messenger)intent.getExtras().get(Constants.MESSENGER_KEY);
-			ipAddress = (String)intent.getExtras().getString(Constants.IP_KEY);
-			
-			connCreator.setIp(ipAddress);
-			connCreator.setMessenger(messenger);
-			connCreator.startThread();
+		synchronized (thisService) {
+			if(connCreator == null)
+				connCreator = new ConnCreator(thisService);
+			if(!connCreator.isRunning()) {
+				messenger = (Messenger)intent.getExtras().get(Constants.MESSENGER_KEY);
+				ipAddress = (String)intent.getExtras().getString(Constants.IP_KEY);
+				
+				connCreator.setIp(ipAddress);
+				connCreator.setMessenger(messenger);
+				connCreator.startThread();
+			}
 		}
 		
 		return super.onStartCommand(intent, flags, startId);
 	}
-
+	
+	/*what if both service stop and stopThread of ConnCreator are called at close intervals? */
 	@Override
 	public void onDestroy() {
 		if(connCreator != null) {
@@ -53,7 +60,24 @@ public class CSClientService extends Service {
 		
 		thisService = null;
 		
+		sendServiceStopToActivity();
+		
 		super.onDestroy();
+	}
+	
+	private void sendServiceStopToActivity() {
+		Message serviceStopMsg= Message.obtain();
+		
+		Bundle bundle = new Bundle();
+		bundle.putInt(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_SERVICE_STOP);
+		
+		serviceStopMsg.setData(bundle);
+		
+		try {
+			messenger.send(serviceStopMsg);
+		} catch (RemoteException re) {
+	
+		}
 	}
 	
 	public void destroy() {
@@ -66,7 +90,7 @@ public class CSClientService extends Service {
 	}
 	
 	public static boolean isRunning() {
-		if(thisService == null)
+		if(thisService == null || thisService.connCreator == null)
 			return false;
 		
 		return thisService.connCreator.isRunning();

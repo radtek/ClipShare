@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.concurrent.Semaphore;
 
 import android.os.Bundle;
 import android.os.Message;
@@ -29,9 +28,8 @@ public class ConnCreator implements Runnable {
 	public void run() {
 		try {
 			clientSocket = new Socket(InetAddress.getByName(ipAddress), Constants.SERVER_PORT);
-			if(clientSocket.isConnected()) {	
+			if(clientSocket.isConnected())
 				clientSocket.close();
-			}			
 		} catch (UnknownHostException uhe) {
 			
 		} catch (IOException ioe) {
@@ -45,18 +43,28 @@ public class ConnCreator implements Runnable {
 		ipAddress = ip;
 	}
 	
+	public String getIp() {
+		return ipAddress;
+	}
+	
 	public void setMessenger(Messenger msngr) {
 		messenger = msngr;
 	}
 	
-	public void startThread() {
-		connCreatorThread = new Thread(this);
-		connCreatorThread.start();
+	public Messenger getMessenge() {
+		return messenger;
+	}
+	
+	public synchronized void startThread() {
+		if(connCreatorThread == null)
+			connCreatorThread = new Thread(this);
+		if(!connCreatorThread.isAlive())
+			connCreatorThread.start();
 		
 		isRunning = true;
 	}
 	
-	public void stopThread(boolean stopService) {
+	public synchronized void stopThread(boolean stopService) {
 		if(connCreatorThread != null)
 			connCreatorThread = null;
 		

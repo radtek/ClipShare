@@ -46,7 +46,11 @@ public class ServerConnectorProxy {
 	private class ServiceMessageHandler extends Handler {
 		@Override
 		public void handleMessage(Message message) {
-			
+			int messageValue = message.getData().getInt(Constants.SERVICE_MSG_KEY);
+			switch(messageValue) {
+				case Constants.SERVICE_MSG_SERVICE_STOP: parentActivity.handleServiceStop();
+														 break;
+			}
 		}
 	}
 }
