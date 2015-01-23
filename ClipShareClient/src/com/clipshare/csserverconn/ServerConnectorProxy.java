@@ -4,10 +4,8 @@ import com.clipshare.common.Constants;
 import com.clipshare.csclientservice.CSClientService;
 import com.clipshare.csclientui.CSClientMain;
 
-import android.app.Activity;
 import android.content.*;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.widget.Toast;
@@ -48,8 +46,10 @@ public class ServerConnectorProxy {
 		public void handleMessage(Message message) {
 			int messageValue = message.getData().getInt(Constants.SERVICE_MSG_KEY);
 			switch(messageValue) {
-				case Constants.SERVICE_MSG_SERVICE_STOP: parentActivity.handleServiceStop();
+				case Constants.SERVICE_MSG_VAL_SERVICE_STOP: parentActivity.handleServiceStop();
 														 break;
+				case Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND: Toast.makeText(parentActivity, Constants.HOST_NOT_FOUND_TEXT, Toast.LENGTH_LONG).show();
+														   break;
 			}
 		}
 	}

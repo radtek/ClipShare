@@ -9,7 +9,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.util.Log;
 
 public class CSClientService extends Service {
 	
@@ -69,7 +68,7 @@ public class CSClientService extends Service {
 		Message serviceStopMsg= Message.obtain();
 		
 		Bundle bundle = new Bundle();
-		bundle.putInt(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_SERVICE_STOP);
+		bundle.putInt(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_SERVICE_STOP);
 		
 		serviceStopMsg.setData(bundle);
 		
