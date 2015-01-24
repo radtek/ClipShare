@@ -30,4 +30,11 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/com/clipshare/csclientservice/ConnCreator.java</name>
+			<type>1</type>
+			<location>C:/Users/Cygnus/Documents/ClipShare/ClipShareClient/src/com/clipshare/csclientservice/ConnCreator.java</location>
+		</link>
+	</linkedResources>
 </projectDescription>
