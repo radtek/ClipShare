@@ -1,6 +1,7 @@
 package com.clipshare.csclientui;
 
 import android.os.Bundle;
+import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.Button;
@@ -10,7 +11,7 @@ import android.widget.Toast;
 import com.clipshare.csclient.R;
 import com.clipshare.csserverconn.ServerConnectorProxy;
 
-public class CSClientMain extends ActionBarActivity implements View.OnClickListener {
+public class CSClientMain extends Activity implements View.OnClickListener {
 	
 	private EditText etIPAddress = null;
 	private Button btConnect = null;

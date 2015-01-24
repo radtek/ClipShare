@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import android.os.Bundle;
 import android.os.Message;
@@ -22,8 +23,13 @@ public class ConnCreator implements Runnable {
 	private Messenger messenger = null;
 	
 	private Socket clientSocket = null;
+    private CSClientService parentService = null;
+
 	private Thread connCreatorThread = null;
-	private CSClientService parentService = null;
+    private Thread senderThread = null;
+    private Thread receiverThread = null;
+
+    public static boolean DISCONNECTING = false;
 	
 	public ConnCreator(CSClientService service) {
 		parentService = service;
@@ -58,37 +64,44 @@ public class ConnCreator implements Runnable {
 	}
 	
 	public void run() {
-		try {
-			clientSocket = new Socket();
-			
-			clientSocket.connect(new InetSocketAddress(ipAddress, Constants.SERVER_PORT), Constants.SERVER_CONNECT_TIMEOUT_MS);
-			if(clientSocket.isConnected())
-				clientSocket.close();
-		} catch (UnknownHostException uhe) {
-			
-		} catch (IOException ioe) {
-			sendMessage(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND, null);
-		} finally {
-			stopThread(true);
-		}
+        clientSocket = new Socket();
+
+        try {
+            clientSocket.connect(new InetSocketAddress(ipAddress, Constants.SERVER_PORT), Constants.SERVER_CONNECT_TIMEOUT_MS);
+        } catch (UnknownHostException uhe) {
+
+        } catch (IOException ioe) {
+            sendMessage(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND, null);
+        }
+
+        Semaphore stopSemaphore = new Semaphore(0);
+
+        if(clientSocket.isConnected()) {
+            senderThread = new Thread(new ClientSender(clientSocket, messenger, stopSemaphore));
+            senderThread.start();
+
+            receiverThread = new Thread(new ClientReceiver(clientSocket, messenger, stopSemaphore));
+            receiverThread.start();
+        }
+
+        try {
+            stopSemaphore.acquire();
+        } catch (InterruptedException ie) {
+
+        }
+
+        if(!DISCONNECTING)
+            stopThread(true);
 	}
 	
 	public void setIp(String ip) {
 		ipAddress = ip;
 	}
-	
-	public String getIp() {
-		return ipAddress;
-	}
-	
+
 	public void setMessenger(Messenger msngr) {
 		messenger = msngr;
 	}
-	
-	public Messenger getMessenge() {
-		return messenger;
-	}
-	
+
 	public synchronized void startThread() {
 		if(connCreatorThread == null)
 			connCreatorThread = new Thread(this);
@@ -99,8 +112,21 @@ public class ConnCreator implements Runnable {
 	}
 	
 	public synchronized void stopThread(boolean stopService) {
-		if(connCreatorThread != null)
-			connCreatorThread = null;
+        DISCONNECTING = true;
+
+        //need to add timeout
+        while(senderThread.isAlive() && receiverThread.isAlive());
+
+        if(clientSocket.isConnected())
+            try {
+                clientSocket.close();
+            } catch (IOException ioe) {
+
+            }
+
+		connCreatorThread = null;
+        senderThread = null;
+        receiverThread = null;
 		
 		isRunning = false;
 		
