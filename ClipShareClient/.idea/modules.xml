@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/ClipShareClient.iml" filepath="$PROJECT_DIR$/ClipShareClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ClipShareClient/ClipShareClient-ClipShareClient.iml" filepath="$PROJECT_DIR$/ClipShareClient/ClipShareClient-ClipShareClient.iml" />
+    </modules>
+  </component>
+</project>
+

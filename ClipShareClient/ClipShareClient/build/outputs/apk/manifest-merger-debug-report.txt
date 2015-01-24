@@ -1,0 +1,69 @@
+-- Merging decision tree log ---
+manifest
+ADDED from AndroidManifest.xml:2:1
+	xmlns:android
+		ADDED from AndroidManifest.xml:2:11
+	package
+		ADDED from AndroidManifest.xml:3:2
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+	android:versionName
+		ADDED from AndroidManifest.xml:5:2
+	android:versionCode
+		ADDED from AndroidManifest.xml:4:2
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+uses-sdk
+ADDED from AndroidManifest.xml:7:2
+MERGED from com.android.support:appcompat-v7:18.0.0:18:5
+	android:targetSdkVersion
+		ADDED from AndroidManifest.xml:9:3
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+	android:minSdkVersion
+		ADDED from AndroidManifest.xml:8:3
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+uses-permission#android.permission.INTERNET
+ADDED from AndroidManifest.xml:11:2
+	android:name
+		ADDED from AndroidManifest.xml:11:19
+application
+ADDED from AndroidManifest.xml:13:2
+MERGED from com.android.support:appcompat-v7:18.0.0:19:5
+	android:label
+		ADDED from AndroidManifest.xml:16:3
+	android:allowBackup
+		ADDED from AndroidManifest.xml:14:3
+	android:icon
+		ADDED from AndroidManifest.xml:15:3
+	android:theme
+		ADDED from AndroidManifest.xml:17:3
+activity#com.clipshare.csclientui.CSClientMain
+ADDED from AndroidManifest.xml:18:3
+	android:label
+		ADDED from AndroidManifest.xml:20:4
+	android:name
+		ADDED from AndroidManifest.xml:19:4
+intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
+ADDED from AndroidManifest.xml:21:4
+action#android.intent.action.MAIN
+ADDED from AndroidManifest.xml:22:5
+	android:name
+		ADDED from AndroidManifest.xml:22:13
+category#android.intent.category.LAUNCHER
+ADDED from AndroidManifest.xml:24:5
+	android:name
+		ADDED from AndroidManifest.xml:24:15
+service#com.clipshare.csclientservice.CSClientService
+ADDED from AndroidManifest.xml:28:3
+	android:process
+		ADDED from AndroidManifest.xml:28:73
+	android:name
+		ADDED from AndroidManifest.xml:28:12
+intent-filter#com.clipshare.csclientservice.CSClientService
+ADDED from AndroidManifest.xml:29:4
+action#com.clipshare.csclientservice.CSClientService
+ADDED from AndroidManifest.xml:30:5
+	android:name
+		ADDED from AndroidManifest.xml:30:13
