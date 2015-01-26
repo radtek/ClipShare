@@ -72,6 +72,8 @@ DWORD WINAPI ClipShareServerListener::ServerSenderThread(LPVOID lpParam)
 
 DWORD ClipShareServerListener::CSServerSenderThread(LPVOID lpParam)
 {
+	SOCKET client = *(SOCKET *)lpParam;
+
 	SetEvent(hConnectionEndEvt);
 
 	return 1;
@@ -84,6 +86,8 @@ DWORD WINAPI ClipShareServerListener::ServerReceiverThread(LPVOID lpParam)
 
 DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 {
+	SOCKET client = *(SOCKET *)lpParam;
+
 	SetEvent(hConnectionEndEvt);
 
 	return 1;
@@ -91,11 +95,11 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 
 bool ClipShareServerListener::ProcessClient(SOCKET *sockClient)
 {
-	HANDLE hSenderThread = CreateThread(NULL, 0, ServerSenderThread, NULL, 0, NULL);
+	HANDLE hSenderThread = CreateThread(NULL, 0, ServerSenderThread, (void *)sockClient, 0, NULL);
 	if(!hSenderThread)
 		return false;
 
-	HANDLE hReceiverThread = CreateThread(NULL, 0, ServerReceiverThread, NULL, 0, NULL);
+	HANDLE hReceiverThread = CreateThread(NULL, 0, ServerReceiverThread, (void *)sockClient, 0, NULL);
 	if(!hReceiverThread)
 		return false;
 
@@ -105,7 +109,7 @@ bool ClipShareServerListener::ProcessClient(SOCKET *sockClient)
 DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 {
 	SOCKET sockClient;
-	struct sockaddr saClient;
+	struct sockaddr_in saClient;
 	int iSAClientLen;
 
 	std::string sFailedAcceptErrorMsgText = "Received connection from client, but an error occurred. Going to continue listening for connections. WSA error code: ";
@@ -117,7 +121,7 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 		iSAClientLen = sizeof(saClient);
 		ZeroMemory((void *)&saClient, iSAClientLen);
 
-		sockClient = accept(sockServer, &saClient, &iSAClientLen);
+		sockClient = accept(sockServer, (sockaddr *)&saClient, &iSAClientLen);
 		if(sockClient == INVALID_SOCKET)
 		{
 			std::ostringstream ossFailedAcceptErrorMsg;
@@ -128,6 +132,10 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 		}
 		else
 		{
+			std::ostringstream ossConnectionReceived;
+			ossConnectionReceived<<"Received connection from Android device with IP: "<<inet_ntoa(saClient.sin_addr);
+			logger.LogMessage(ossConnectionReceived.str());
+
 			ResetEvent(hConnectionEndEvt);
 
 			if(!ProcessClient(&sockClient))
@@ -140,6 +148,9 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 				if(hConnectionEndEvt == INVALID_HANDLE_VALUE || WaitForSingleObject(hServiceStopEvt, 0) != WAIT_TIMEOUT)
 					break;
 			}
+
+			ossConnectionReceived.clear();
+			ossConnectionReceived<<"Lost connection to: "<<inet_ntoa(saClient.sin_addr);
 		}
 	}
 
