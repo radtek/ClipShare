@@ -64,30 +64,34 @@ public class ConnCreator implements Runnable {
 	}
 	
 	public void run() {
+        boolean connected = false;
         clientSocket = new Socket();
 
         try {
             clientSocket.connect(new InetSocketAddress(ipAddress, Constants.SERVER_PORT), Constants.SERVER_CONNECT_TIMEOUT_MS);
+            connected = true;
         } catch (UnknownHostException uhe) {
 
         } catch (IOException ioe) {
             sendMessage(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND, null);
         }
 
-        Semaphore stopSemaphore = new Semaphore(0);
+        if(connected) {
+            Semaphore stopSemaphore = new Semaphore(0);
 
-        if(clientSocket.isConnected()) {
-            senderThread = new Thread(new ClientSender(clientSocket, messenger, stopSemaphore));
-            senderThread.start();
+            if (clientSocket.isConnected()) {
+                senderThread = new Thread(new ClientSender(clientSocket, messenger, stopSemaphore));
+                senderThread.start();
 
-            receiverThread = new Thread(new ClientReceiver(clientSocket, messenger, stopSemaphore));
-            receiverThread.start();
-        }
+                receiverThread = new Thread(new ClientReceiver(clientSocket, messenger, stopSemaphore));
+                receiverThread.start();
+            }
 
-        try {
-            stopSemaphore.acquire();
-        } catch (InterruptedException ie) {
+            try {
+                stopSemaphore.acquire();
+            } catch (InterruptedException ie) {
 
+            }
         }
 
         if(!DISCONNECTING)
@@ -107,7 +111,7 @@ public class ConnCreator implements Runnable {
 			connCreatorThread = new Thread(this);
 		if(!connCreatorThread.isAlive())
 			connCreatorThread.start();
-		
+
 		isRunning = true;
 	}
 	
@@ -115,7 +119,10 @@ public class ConnCreator implements Runnable {
         DISCONNECTING = true;
 
         //need to add timeout
-        while(senderThread.isAlive() && receiverThread.isAlive());
+        if(senderThread != null)
+            while(senderThread.isAlive());
+        if(receiverThread != null)
+            while(receiverThread.isAlive());
 
         if(clientSocket.isConnected())
             try {

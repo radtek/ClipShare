@@ -17,4 +17,5 @@ public class Constants {
 	public static final int SERVICE_MSG_VAL_DATA = 2;
 	
 	public static final String SERVICE_MSG_EXTRAS_KEY = "service_msg_extras";
+    public static final String SERVICE_MSG_EXTRAS_CLIPTEXT_KEY = "service_msg_extras_cliptext";
 }

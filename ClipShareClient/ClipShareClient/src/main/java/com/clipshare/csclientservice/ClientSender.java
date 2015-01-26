@@ -24,7 +24,7 @@ public class ClientSender implements Runnable {
         try {
             PrintWriter clientSender = new PrintWriter(new OutputStreamWriter(client.getOutputStream()));
 
-            while(!ConnCreator.DISCONNECTING && client.isConnected()) {
+            while(!ConnCreator.DISCONNECTING) {
 
             }
 
