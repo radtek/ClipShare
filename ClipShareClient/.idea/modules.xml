@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ClipShareClient.iml" filepath="$PROJECT_DIR$/ClipShareClient.iml" />
       <module fileurl="file://$PROJECT_DIR$/ClipShareClient/ClipShareClient-ClipShareClient.iml" filepath="$PROJECT_DIR$/ClipShareClient/ClipShareClient-ClipShareClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/appcompat_v7/appcompat_v7.iml" filepath="$PROJECT_DIR$/appcompat_v7/appcompat_v7.iml" />
     </modules>
   </component>
 </project>

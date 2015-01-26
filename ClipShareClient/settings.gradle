@@ -1,1 +1,1 @@
-include ':ClipShareClient'
+include ':ClipShareClient', ':appcompat_v7'
