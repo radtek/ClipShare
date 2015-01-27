@@ -18,4 +18,12 @@ public class Constants {
 	
 	public static final String SERVICE_MSG_EXTRAS_KEY = "service_msg_extras";
     public static final String SERVICE_MSG_EXTRAS_CLIPTEXT_KEY = "service_msg_extras_cliptext";
+
+    public static final String SERVICE_COMMAND_KEY = "service_cmd";
+    public static final String SERVICE_COMMAND_SETIP_KEY = "service_cmd_setip";
+    public static final String SERVICE_COMMAND_SETMESSENGER_KEY = "service_cmd_setmessenger";
+    public static final int SERVICE_COMMAND_VAL_SETIP = 0;
+    public static final int SERVICE_COMMAND_VAL_SETMESSENGER = 1;
+    public static final int SERVICE_COMMAND_VAL_START = 3;
+    public static final int SERVICE_COMMAND_VAL_STOP = 4;
 }

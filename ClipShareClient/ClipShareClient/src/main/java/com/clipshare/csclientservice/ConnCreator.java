@@ -23,7 +23,6 @@ public class ConnCreator implements Runnable {
 	private Messenger messenger = null;
 	
 	private Socket clientSocket = null;
-    private CSClientService parentService = null;
 
 	private Thread connCreatorThread = null;
     private Thread senderThread = null;
@@ -31,8 +30,8 @@ public class ConnCreator implements Runnable {
 
     public static boolean DISCONNECTING = false;
 	
-	public ConnCreator(CSClientService service) {
-		parentService = service;
+	public ConnCreator() {
+
 	}
 	
 	private void sendMessage(String mainKey, int mainVal, HashMap<String, String> extras) {
@@ -69,7 +68,6 @@ public class ConnCreator implements Runnable {
 
         try {
             clientSocket.connect(new InetSocketAddress(ipAddress, Constants.SERVER_PORT), Constants.SERVER_CONNECT_TIMEOUT_MS);
-            connected = true;
         } catch (UnknownHostException uhe) {
 
         } catch (IOException ioe) {
@@ -95,7 +93,7 @@ public class ConnCreator implements Runnable {
         }
 
         if(!DISCONNECTING)
-            stopThread(true);
+            stopThread();
 	}
 	
 	public void setIp(String ip) {
@@ -107,6 +105,8 @@ public class ConnCreator implements Runnable {
 	}
 
 	public synchronized void startThread() {
+        DISCONNECTING = false;
+
 		if(connCreatorThread == null)
 			connCreatorThread = new Thread(this);
 		if(!connCreatorThread.isAlive())
@@ -115,31 +115,47 @@ public class ConnCreator implements Runnable {
 		isRunning = true;
 	}
 	
-	public synchronized void stopThread(boolean stopService) {
-        DISCONNECTING = true;
+	public synchronized void stopThread() {
+        if(isRunning) {
+            DISCONNECTING = true;
 
-        //need to add timeout
-        if(senderThread != null)
-            while(senderThread.isAlive());
-        if(receiverThread != null)
-            while(receiverThread.isAlive());
+            //need to add timeout
+            if (senderThread != null)
+                while (senderThread.isAlive()) ;
+            if (receiverThread != null)
+                while (receiverThread.isAlive()) ;
 
-        if(clientSocket.isConnected())
-            try {
-                clientSocket.close();
-            } catch (IOException ioe) {
+            if (clientSocket.isConnected())
+                try {
+                    clientSocket.close();
+                } catch (IOException ioe) {
 
-            }
+                }
 
-		connCreatorThread = null;
-        senderThread = null;
-        receiverThread = null;
-		
-		isRunning = false;
-		
-		if(stopService)
-			parentService.destroy();
+            connCreatorThread = null;
+            senderThread = null;
+            receiverThread = null;
+
+            isRunning = false;
+
+            sendServiceStopToActivity();
+        }
 	}
+
+    private void sendServiceStopToActivity() {
+        Message serviceStopMsg= Message.obtain();
+
+        Bundle bundle = new Bundle();
+        bundle.putInt(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_SERVICE_STOP);
+
+        serviceStopMsg.setData(bundle);
+
+        try {
+            messenger.send(serviceStopMsg);
+        } catch (RemoteException re) {
+
+        }
+    }
 	
 	public boolean isRunning() {
 		return isRunning;
