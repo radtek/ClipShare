@@ -5,6 +5,7 @@ import com.clipshare.common.Constants;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
@@ -13,79 +14,58 @@ import android.os.RemoteException;
 public class CSClientService extends Service {
 	
 	private static CSClientService thisService = null;
-	
+
 	private String ipAddress = null;
-	private Messenger messenger = null;
+	private Messenger serverMessenger = null;
 	private ConnCreator connCreator = null;
+
+    private final Messenger commandMessenger = new Messenger(new ServiceCommandHandler());
 	
 	public CSClientService() {
-		
+		thisService = this;
 	}
 	
 	@Override
 	public void onCreate() {
-		thisService = this;
-		
 		super.onCreate();
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		synchronized (thisService) {
-			if(connCreator == null)
-				connCreator = new ConnCreator(thisService);
-			if(!connCreator.isRunning()) {
-				messenger = (Messenger)intent.getExtras().get(Constants.MESSENGER_KEY);
-				ipAddress = (String)intent.getExtras().getString(Constants.IP_KEY);
-				
-				connCreator.setIp(ipAddress);
-				connCreator.setMessenger(messenger);
-				connCreator.startThread();
-			}
-		}
-		
 		return super.onStartCommand(intent, flags, startId);
 	}
+
+    private synchronized void start() {
+        if(connCreator == null)
+            connCreator = new ConnCreator();
+        if(!connCreator.isRunning()) {
+            connCreator.setIp(ipAddress);
+            connCreator.setMessenger(serverMessenger);
+            connCreator.startThread();
+        }
+    }
+
+    //this is not called when the connection is terminated, hence connCreator is not set to null in that case. Need to fix.
+    public void stop() {
+        if(connCreator != null) {
+            if (connCreator.isRunning())
+                connCreator.stopThread();
+
+            connCreator = null;
+        }
+    }
 	
-	/*what if both service stop and stopThread of ConnCreator are called at close intervals? */
 	@Override
 	public void onDestroy() {
-		if(connCreator != null) {
-			if(connCreator.isRunning())
-				connCreator.stopThread(false);
-			
-			connCreator = null;
-		}
-		
+        stop();
 		thisService = null;
-		
-		sendServiceStopToActivity();
-		
+
 		super.onDestroy();
-	}
-	
-	private void sendServiceStopToActivity() {
-		Message serviceStopMsg= Message.obtain();
-		
-		Bundle bundle = new Bundle();
-		bundle.putInt(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_SERVICE_STOP);
-		
-		serviceStopMsg.setData(bundle);
-		
-		try {
-			messenger.send(serviceStopMsg);
-		} catch (RemoteException re) {
-	
-		}
-	}
-	
-	public void destroy() {
-		stopSelf();
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		return null;
+		return commandMessenger.getBinder();
 	}
 	
 	public static boolean isRunning() {
@@ -95,4 +75,21 @@ public class CSClientService extends Service {
 		return thisService.connCreator.isRunning();
 	}
 
+    public class ServiceCommandHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            Bundle data = msg.getData();
+
+            switch(data.getInt(Constants.SERVICE_COMMAND_KEY)) {
+                case Constants.SERVICE_COMMAND_VAL_SETIP: ipAddress = data.getString(Constants.SERVICE_COMMAND_SETIP_KEY);
+                        break;
+                case Constants.SERVICE_COMMAND_VAL_SETMESSENGER: serverMessenger = (Messenger)data.getParcelable(Constants.SERVICE_COMMAND_SETMESSENGER_KEY);
+                        break;
+                case Constants.SERVICE_COMMAND_VAL_START: start();
+                        break;
+                case Constants.SERVICE_COMMAND_VAL_STOP: stop();
+                        break;
+            }
+        }
+    }
 }
