@@ -8,6 +8,7 @@ class Logger
 {
 	private:
 		HANDLE hLogger;
+		HANDLE hFileLock;
 		static const int CUR_TIME_MAX_LENGTH = 20;
 
 	public:

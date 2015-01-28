@@ -149,8 +149,9 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 					break;
 			}
 
-			ossConnectionReceived.clear();
+			ossConnectionReceived.str(std::string());
 			ossConnectionReceived<<"Lost connection to: "<<inet_ntoa(saClient.sin_addr);
+			logger.LogMessage(ossConnectionReceived.str());
 		}
 	}
 

@@ -9,32 +9,42 @@ void Logger::InitLogger(std::string sLogFileName)
 	{
 		hLogger = NULL;
 	}
+	else
+	{
+		hFileLock = CreateMutex(NULL, FALSE, NULL);
+	}
 }
 
 void Logger::LogMessage(std::string sLogMsg)
 {
 	if(hLogger)
 	{
-		SYSTEMTIME stCurTime;
-		DWORD dwNumberOfBytesWritten;
+		switch(WaitForSingleObject(hFileLock, INFINITE))
+		{
+			case WAIT_OBJECT_0: 	SYSTEMTIME stCurTime;
+									DWORD dwNumberOfBytesWritten;
 
-		GetSystemTime(&stCurTime);
+									GetSystemTime(&stCurTime);
 
-		std::ostringstream ssCurTime;
-		ssCurTime<<"["<<stCurTime.wDay<<"/"
-				 <<stCurTime.wMonth<<"/"
-				 <<stCurTime.wYear<<" "
-				 <<stCurTime.wHour<<":"
-				 <<stCurTime.wMinute<<":"
-				 <<stCurTime.wSecond<<"] ";
+									std::ostringstream ssCurTime;
+									ssCurTime<<"["<<stCurTime.wDay<<"/"
+												<<stCurTime.wMonth<<"/"
+												<<stCurTime.wYear<<" "
+												<<stCurTime.wHour<<":"
+												<<stCurTime.wMinute<<":"
+												<<stCurTime.wSecond<<"] ";
 		
-		std::string tempCurTime = ssCurTime.str();
-		LPCSTR strCurTime = tempCurTime.c_str();
-		LPCSTR strLogMsg = sLogMsg.c_str();
+									std::string tempCurTime = ssCurTime.str();
+									LPCSTR strCurTime = tempCurTime.c_str();
+									LPCSTR strLogMsg = sLogMsg.c_str();
 
-		WriteFile(hLogger, strCurTime, lstrlenA(strCurTime), &dwNumberOfBytesWritten, NULL);
-		WriteFile(hLogger, strLogMsg, lstrlenA(strLogMsg), &dwNumberOfBytesWritten, NULL);
-		WriteFile(hLogger, "\n", 1, &dwNumberOfBytesWritten, NULL);
+									WriteFile(hLogger, strCurTime, lstrlenA(strCurTime), &dwNumberOfBytesWritten, NULL);
+									WriteFile(hLogger, strLogMsg, lstrlenA(strLogMsg), &dwNumberOfBytesWritten, NULL);
+									WriteFile(hLogger, "\n", 1, &dwNumberOfBytesWritten, NULL);
+							
+									ReleaseMutex(hFileLock);
+									break;
+		}
 	}
 }
 
@@ -44,5 +54,11 @@ void Logger::CloseLogger()
 	{
 		CloseHandle(hLogger);
 		hLogger = NULL;
+
+		if(hFileLock != NULL)
+		{
+			CloseHandle(hFileLock);
+			hFileLock = NULL;
+		}
 	}
 }
