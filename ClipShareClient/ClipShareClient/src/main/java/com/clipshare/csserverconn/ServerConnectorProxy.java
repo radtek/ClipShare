@@ -101,8 +101,11 @@ public class ServerConnectorProxy {
 				case Constants.SERVICE_MSG_VAL_SERVICE_STOP:parentActivity.unbindService(serviceConnection);
                                                             parentActivity.handleServiceStop();
 														    break;
-				case Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND: Toast.makeText(parentActivity, Constants.HOST_NOT_FOUND_TEXT, Toast.LENGTH_LONG).show();
+				case Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND: Toast.makeText(parentActivity.getApplicationContext(), Constants.HOST_NOT_FOUND_TEXT, Toast.LENGTH_LONG).show();
 														   break;
+                case Constants.SERVICE_MSG_VAL_ERROR: String errorMsg = message.getData().getBundle(Constants.SERVICE_MSG_EXTRAS_KEY).getString(Constants.SERVICE_MSG_ERROR_KEY);
+                                                      Toast.makeText(parentActivity.getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
+                                                      break;
 			}
 		}
 	}

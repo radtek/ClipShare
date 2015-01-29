@@ -19,6 +19,11 @@ public class Constants {
 	public static final String SERVICE_MSG_EXTRAS_KEY = "service_msg_extras";
     public static final String SERVICE_MSG_EXTRAS_CLIPTEXT_KEY = "service_msg_extras_cliptext";
 
+    public static final int SERVICE_MSG_VAL_ERROR = 3;
+    public static final String SERVICE_MSG_ERROR_KEY = "service_msg_error";
+
+    public static final String SERVICE_MSG_ERROR_HANDSHAKE_TEXT = "Connection error. Please try again.";
+
     public static final String SERVICE_COMMAND_KEY = "service_cmd";
     public static final String SERVICE_COMMAND_SETIP_KEY = "service_cmd_setip";
     public static final String SERVICE_COMMAND_SETMESSENGER_KEY = "service_cmd_setmessenger";

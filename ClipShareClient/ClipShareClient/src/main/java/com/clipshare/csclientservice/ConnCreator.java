@@ -1,13 +1,19 @@
 package com.clipshare.csclientservice;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeoutException;
 
 import android.os.Bundle;
 import android.os.Message;
@@ -29,6 +35,9 @@ public class ConnCreator implements Runnable {
     private Thread receiverThread = null;
 
     public static boolean DISCONNECTING = false;
+
+    private static final String HANDSHAKE_MSG = "HELLO";
+    private static final int READ_TIMEOUT = 10;
 	
 	public ConnCreator() {
 
@@ -61,6 +70,29 @@ public class ConnCreator implements Runnable {
 			
 		}
 	}
+
+    private int performHandshake(Socket client) {
+        try {
+            BufferedReader recvReader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+            String serverHandshake = recvReader.readLine();
+            if(serverHandshake.compareTo(HANDSHAKE_MSG) != 0)
+                return 1;
+        } catch (IOException ioe) {
+            return 1;
+        } catch (Exception toe) {
+            return 1;
+        }
+
+        try {
+            PrintWriter sendWriter = new PrintWriter(new OutputStreamWriter(client.getOutputStream()));
+            sendWriter.write(HANDSHAKE_MSG + "\n");
+            sendWriter.flush();
+        } catch (IOException ioe) {
+            return 2;
+        }
+
+        return 0;
+    }
 	
 	public void run() {
         boolean connected = false;
@@ -68,6 +100,15 @@ public class ConnCreator implements Runnable {
 
         try {
             clientSocket.connect(new InetSocketAddress(ipAddress, Constants.SERVER_PORT), Constants.SERVER_CONNECT_TIMEOUT_MS);
+            clientSocket.setSoTimeout(READ_TIMEOUT * 1000);
+
+            if(performHandshake(clientSocket) == 0) {
+                connected = true;
+            } else {
+                HashMap<String, String> errorMsgMap = new HashMap<String, String>();
+                errorMsgMap.put(Constants.SERVICE_MSG_ERROR_KEY, Constants.SERVICE_MSG_ERROR_HANDSHAKE_TEXT);
+                sendMessage(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_ERROR, errorMsgMap);
+            }
         } catch (UnknownHostException uhe) {
 
         } catch (IOException ioe) {
