@@ -1,10 +1,12 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
+#include <Shlwapi.h>
 #include <sstream>
 
 #include "ClipShareServerListener.h"
 
 ClipShareServerListener *ClipShareServerListener::pServerListener = NULL;
+std::string ClipShareServerListener::HANDSHAKE_MSG = "HELLO\n";
 
 ClipShareServerListener::ClipShareServerListener(Logger *_logger)
 {
@@ -93,14 +95,38 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 	return 1;
 }
 
+int ClipShareServerListener::PerformHandshake(SOCKET *client)
+{
+	const char *szHandshakeMsg = HANDSHAKE_MSG.c_str();
+	if(send(*client, szHandshakeMsg, strlen(szHandshakeMsg), 0) == SOCKET_ERROR)
+	{
+		logger.LogMessage("Error in sending handshake message. Exiting...");
+		return 1;
+	}
+
+	char szInData[7] = {'\0'};
+	if(recv(*client, szInData, 7, 0) == SOCKET_ERROR || StrCmpA(szInData, HANDSHAKE_MSG.substr(0, HANDSHAKE_MSG.size()-1).c_str()) == 0)
+	{
+		logger.LogMessage("Error in receiving handshake message. Exiting...");
+		return 1;
+	}
+
+	return 0;
+}
+
 bool ClipShareServerListener::ProcessClient(SOCKET *sockClient)
 {
-	HANDLE hSenderThread = CreateThread(NULL, 0, ServerSenderThread, (void *)sockClient, 0, NULL);
-	if(!hSenderThread)
-		return false;
+	if(!PerformHandshake(sockClient))
+	{
+		HANDLE hSenderThread = CreateThread(NULL, 0, ServerSenderThread, (void *)sockClient, 0, NULL);
+		if(!hSenderThread)
+			return false;
 
-	HANDLE hReceiverThread = CreateThread(NULL, 0, ServerReceiverThread, (void *)sockClient, 0, NULL);
-	if(!hReceiverThread)
+		HANDLE hReceiverThread = CreateThread(NULL, 0, ServerReceiverThread, (void *)sockClient, 0, NULL);
+		if(!hReceiverThread)
+			return false;
+	}
+	else
 		return false;
 
 	return true;
@@ -136,12 +162,16 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 			ossConnectionReceived<<"Received connection from Android device with IP: "<<inet_ntoa(saClient.sin_addr);
 			logger.LogMessage(ossConnectionReceived.str());
 
+			setsockopt(sockClient, SOL_SOCKET, SO_RCVTIMEO, (char *)&READ_TIMEOUT, sizeof(int));
+
 			ResetEvent(hConnectionEndEvt);
 
 			if(!ProcessClient(&sockClient))
 				logger.LogMessage("Error in creating the sender or receiver thread. Try connecting again. Going back to listening for connections.");
 			else
 			{
+				logger.LogMessage("Handshake complete, connection established.");
+
 				HANDLE hWaitHandles[2] = {hServiceStopEvt, hConnectionEndEvt};
 				WaitForMultipleObjects(2, hWaitHandles, FALSE, INFINITE);
 
