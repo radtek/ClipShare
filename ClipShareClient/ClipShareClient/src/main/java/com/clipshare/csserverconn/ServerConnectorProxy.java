@@ -23,7 +23,24 @@ public class ServerConnectorProxy {
 	private Handler serviceMsgHandler = null;
 	private Intent serviceIntent = null;
     private ServiceConnection serviceConnection = null;
-	
+
+    private boolean bound = false;
+    private BroadcastReceiver serviceStatusReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().compareTo(Constants.SERVICE_STATUS_BR_INTENT_NAME) == 0) {
+                int serviceStatus = intent.getExtras().getInt(Constants.SERVICE_STATUS_KEY);
+                if(serviceStatus == 1)
+                    bound = true;
+                else {
+                    bound = false;
+                    unregisterReceiver();
+                }
+            }
+
+        }
+    };
+
 	private CSClientMain parentActivity = null;
 	
 	public ServerConnectorProxy(CSClientMain mainActivity) {
@@ -46,6 +63,10 @@ public class ServerConnectorProxy {
 		
 		parentActivity = mainActivity;
 	}
+
+    private void unregisterReceiver() {
+        parentActivity.unregisterReceiver(serviceStatusReceiver);
+    }
 
     private void startService() {
         sendCommandToService(Constants.SERVICE_COMMAND_VAL_SETIP, ipAddress);
@@ -81,14 +102,16 @@ public class ServerConnectorProxy {
     }
 	
 	public void handleConnectRequest(String uiIpAddress) {
-		if(parentActivity != null && !CSClientService.isRunning()) {
+		if(parentActivity != null && !bound) {
+            parentActivity.registerReceiver(serviceStatusReceiver, new IntentFilter(Constants.SERVICE_STATUS_BR_INTENT_NAME));
+
             ipAddress = uiIpAddress;
             parentActivity.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
 		}
 	}
 	
 	public void handleDisconnectRequest() {
-		if(CSClientService.isRunning()) {
+		if(bound) {
             sendCommandToService(Constants.SERVICE_COMMAND_VAL_STOP, null);
         }
 	}
@@ -106,6 +129,8 @@ public class ServerConnectorProxy {
                 case Constants.SERVICE_MSG_VAL_ERROR: String errorMsg = message.getData().getBundle(Constants.SERVICE_MSG_EXTRAS_KEY).getString(Constants.SERVICE_MSG_ERROR_KEY);
                                                       Toast.makeText(parentActivity.getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
                                                       break;
+                case Constants.SERVICE_MSG_VAL_CONNECTION_TERM: Toast.makeText(parentActivity.getApplicationContext(), Constants.SERVICE_MSG_CONNECTION_TERM_TEXT, Toast.LENGTH_LONG).show();
+                                                                break;
 			}
 		}
 	}

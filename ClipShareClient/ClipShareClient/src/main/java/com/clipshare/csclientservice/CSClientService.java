@@ -12,8 +12,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 
 public class CSClientService extends Service {
-	
-	private static CSClientService thisService = null;
 
 	private String ipAddress = null;
 	private Messenger serverMessenger = null;
@@ -22,7 +20,7 @@ public class CSClientService extends Service {
     private final Messenger commandMessenger = new Messenger(new ServiceCommandHandler());
 	
 	public CSClientService() {
-		thisService = this;
+
 	}
 	
 	@Override
@@ -43,6 +41,10 @@ public class CSClientService extends Service {
             connCreator.setMessenger(serverMessenger);
             connCreator.startThread();
         }
+
+        Intent intent = new Intent(Constants.SERVICE_STATUS_BR_INTENT_NAME);
+        intent.putExtra(Constants.SERVICE_STATUS_KEY, 1);
+        sendBroadcast(intent);
     }
 
     //this is not called when the connection is terminated, hence connCreator is not set to null in that case. Need to fix.
@@ -53,12 +55,15 @@ public class CSClientService extends Service {
 
             connCreator = null;
         }
+
+        Intent intent = new Intent(Constants.SERVICE_STATUS_BR_INTENT_NAME);
+        intent.putExtra(Constants.SERVICE_STATUS_KEY, 0);
+        sendBroadcast(intent);
     }
 	
 	@Override
 	public void onDestroy() {
         stop();
-		thisService = null;
 
 		super.onDestroy();
 	}
@@ -66,13 +71,6 @@ public class CSClientService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return commandMessenger.getBinder();
-	}
-	
-	public static boolean isRunning() {
-		if(thisService == null || thisService.connCreator == null)
-			return false;
-		
-		return thisService.connCreator.isRunning();
 	}
 
     public class ServiceCommandHandler extends Handler {
