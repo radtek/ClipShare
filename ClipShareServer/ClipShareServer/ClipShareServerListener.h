@@ -13,7 +13,7 @@ class ClipShareServerListener
 
 		DWORD InitServerListenerWorker();
 		bool ProcessClient(SOCKET *);
-		int PerformHandshake(SOCKET *client);
+		int PerformHandshake(SOCKET client);
 
 		static DWORD WINAPI ServerListenerThread(LPVOID);
 		static DWORD WINAPI ServerListenerWorkerThread(LPVOID);
@@ -22,8 +22,14 @@ class ClipShareServerListener
 		static DWORD WINAPI ServerReceiverThread(LPVOID);	
 
 		static const int SERVER_LISTENER_PORT = 7489;
-		static std::string HANDSHAKE_MSG;
-		static const int  READ_TIMEOUT = 10;
+		static const int CONNECTION_MSG_MAX_BUFFER = 1024;
+		static const int READ_TIMEOUT = 10;
+		static const int ALIVE_MSG_INTERVAL_SEC = 5;
+
+		static const char HANDSHAKE_MSG = 0x12;
+		static const char CONNECTION_ALIVE_MSG = 0x23;
+		static const char CONNECTION_DATA_MSG = 0x34;
+		static const char CONNECTION_END_MSG = 0x45;
 
 		HANDLE hServiceStopEvt;
 		HANDLE hConnectionEndEvt;

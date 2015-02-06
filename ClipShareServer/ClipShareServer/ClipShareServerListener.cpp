@@ -6,7 +6,6 @@
 #include "ClipShareServerListener.h"
 
 ClipShareServerListener *ClipShareServerListener::pServerListener = NULL;
-std::string ClipShareServerListener::HANDSHAKE_MSG = "HELLO\n";
 
 ClipShareServerListener::ClipShareServerListener(Logger *_logger)
 {
@@ -95,17 +94,16 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 	return 1;
 }
 
-int ClipShareServerListener::PerformHandshake(SOCKET *client)
+int ClipShareServerListener::PerformHandshake(SOCKET client)
 {
-	const char *szHandshakeMsg = HANDSHAKE_MSG.c_str();
-	if(send(*client, szHandshakeMsg, strlen(szHandshakeMsg), 0) == SOCKET_ERROR)
+	if(send(client, &HANDSHAKE_MSG, sizeof(HANDSHAKE_MSG), 0) == SOCKET_ERROR)
 	{
 		logger.LogMessage("Error in sending handshake message. Exiting...");
 		return 1;
 	}
 
-	char szInData[7] = {'\0'};
-	if(recv(*client, szInData, 7, 0) == SOCKET_ERROR || StrCmpA(szInData, HANDSHAKE_MSG.substr(0, HANDSHAKE_MSG.size()-1).c_str()) == 0)
+	char szInData;
+	if(recv(client, &szInData, 1, 0) == SOCKET_ERROR || szInData != HANDSHAKE_MSG)
 	{
 		logger.LogMessage("Error in receiving handshake message. Exiting...");
 		return 1;
@@ -116,7 +114,7 @@ int ClipShareServerListener::PerformHandshake(SOCKET *client)
 
 bool ClipShareServerListener::ProcessClient(SOCKET *sockClient)
 {
-	if(!PerformHandshake(sockClient))
+	if(!PerformHandshake(*sockClient))
 	{
 		HANDLE hSenderThread = CreateThread(NULL, 0, ServerSenderThread, (void *)sockClient, 0, NULL);
 		if(!hSenderThread)
