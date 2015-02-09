@@ -84,6 +84,19 @@ DWORD ClipShareServerListener::CSServerSenderThread(LPVOID lpParam)
 		}
 		else
 		{
+			DWORD dwLastSockError = WSAGetLastError();
+
+			switch(dwLastSockError)
+			{
+				case WSAENOTCONN:
+				case WSAENOTSOCK: logger.LogMessage("Connection to client is no longer valid or the socket has been closed. Exiting server sender thread.");
+								  break;
+				default: std::ostringstream ossSocketError;
+						 ossSocketError<<"Error in sending alive message to client. Exiting server sender thread. WSA error code: "<<WSAGetLastError();
+						 logger.LogMessage(ossSocketError.str());
+						 break;
+			}
+
 			break;
 		}
 	}
@@ -102,6 +115,45 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 {
 	SOCKET client = *(SOCKET *)lpParam;
 
+	char inData = '\0';
+
+	while(!bServiceStopping)
+	{
+		int recvCode = recv(client, &inData, sizeof(inData), 0);
+
+		if(recvCode != SOCKET_ERROR)
+		{
+			if(recvCode == 0)
+			{
+				logger.LogMessage("Connection to client closed. Closing clipboard sharing session.");
+				break;
+			}
+			else
+			{
+				if(inData != CONNECTION_ALIVE_MSG)
+					logger.LogMessage("Received unknown message from client. Closing clipboard sharing session.");
+				else
+					continue;
+			}
+		}
+		else
+		{
+			DWORD dwLastSockError = WSAGetLastError();
+
+			switch(dwLastSockError)
+			{
+				case WSAETIMEDOUT: logger.LogMessage("Connection to client timed out. Closing clipboard sharing session.");
+								   break;
+				default: std::ostringstream ossSocketError;
+						 ossSocketError<<"Error in receiving data from client. Exiting server receiver thread. WSA error code: "<<WSAGetLastError();
+						 logger.LogMessage(ossSocketError.str());
+						 break;
+			}
+
+			break;
+		}
+	}
+
 	SetEvent(hConnectionEndEvt);
 
 	return 1;
@@ -115,8 +167,8 @@ int ClipShareServerListener::PerformHandshake(SOCKET client)
 		return 1;
 	}
 
-	char szInData;
-	if(recv(client, &szInData, 1, 0) == SOCKET_ERROR || szInData != HANDSHAKE_MSG)
+	char inData;
+	if(recv(client, &inData, 1, 0) == SOCKET_ERROR || inData != HANDSHAKE_MSG)
 	{
 		logger.LogMessage("Error in receiving handshake message. Exiting...");
 		return 1;
@@ -185,6 +237,8 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 
 				HANDLE hWaitHandles[2] = {hServiceStopEvt, hConnectionEndEvt};
 				WaitForMultipleObjects(2, hWaitHandles, FALSE, INFINITE);
+
+				closesocket(sockClient);
 
 				ossConnectionReceived.str(std::string());
 				ossConnectionReceived<<"Lost connection to: "<<inet_ntoa(saClient.sin_addr);

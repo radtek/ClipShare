@@ -27,12 +27,17 @@ void Logger::LogMessage(std::string sLogMsg)
 									GetSystemTime(&stCurTime);
 
 									std::ostringstream ssCurTime;
-									ssCurTime<<"["<<stCurTime.wDay<<"/"
-												<<stCurTime.wMonth<<"/"
-												<<stCurTime.wYear<<" "
-												<<stCurTime.wHour<<":"
-												<<stCurTime.wMinute<<":"
-												<<stCurTime.wSecond<<"] ";
+									ssCurTime<<"[";
+									(stCurTime.wDay/10 != 0)?ssCurTime<<(stCurTime.wDay):(ssCurTime<<"0"<<stCurTime.wDay);
+									ssCurTime<<"/";
+									(stCurTime.wMonth/10 != 0)?ssCurTime<<(stCurTime.wMonth):(ssCurTime<<"0"<<stCurTime.wMonth);
+									ssCurTime<<"/"<<stCurTime.wYear<<" ";
+									(stCurTime.wHour/10 != 0)?ssCurTime<<(stCurTime.wHour):(ssCurTime<<"0"<<stCurTime.wHour);
+									ssCurTime<<":";
+									(stCurTime.wMinute/10 != 0)?ssCurTime<<(stCurTime.wMinute):(ssCurTime<<"0"<<stCurTime.wMinute);
+									ssCurTime<<":";
+									(stCurTime.wSecond/10 != 0)?ssCurTime<<(stCurTime.wSecond):(ssCurTime<<"0"<<stCurTime.wSecond);
+									ssCurTime<<"] ";
 		
 									std::string tempCurTime = ssCurTime.str();
 									LPCSTR strCurTime = tempCurTime.c_str();

@@ -2,6 +2,8 @@ package com.clipshare.csclientservice;
 
 import android.os.Messenger;
 
+import com.clipshare.common.Constants;
+
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -25,7 +27,14 @@ public class ClientSender implements Runnable {
             PrintWriter clientSender = new PrintWriter(new OutputStreamWriter(client.getOutputStream()));
 
             while(!ConnCreator.DISCONNECTING) {
+                clientSender.print(Constants.CONNECTION_ALIVE_MSG);
+                clientSender.flush();
 
+                try {
+                    Thread.sleep(Constants.CONNECTION_ALIVE_MSG_INTERVAL_S * 1000, 0);
+                } catch (InterruptedException ie) {
+
+                }
             }
 
             semaphore.release();

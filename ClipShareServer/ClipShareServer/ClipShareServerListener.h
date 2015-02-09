@@ -23,7 +23,7 @@ class ClipShareServerListener
 
 		static const int SERVER_LISTENER_PORT = 7489;
 		static const int CONNECTION_MSG_MAX_BUFFER = 1024;
-		static const int READ_TIMEOUT = 10;
+		static const int READ_TIMEOUT = 10 * 1000;
 		static const int ALIVE_MSG_INTERVAL_SEC = 5;
 
 		static const char HANDSHAKE_MSG = 0x12;

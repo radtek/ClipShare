@@ -38,6 +38,7 @@ public class Constants {
     public static final int SERVICE_COMMAND_VAL_STOP = 4;
 
     public static final int CONNECTION_READ_TIMEOUT_S = 10;
+    public static final int CONNECTION_ALIVE_MSG_INTERVAL_S = 5;
     public static final char CONNECTION_ALIVE_MSG = 0x23;
     public static final char CONNECTION_END_MSG = 0x34;
     public static final char CONNECTION_DATA_MSG = 0x45;
