@@ -25,7 +25,9 @@ public class Constants {
     public static final String SERVICE_MSG_ERROR_HANDSHAKE_TEXT = "Connection error. Please try again.";
 
     public static final int SERVICE_MSG_VAL_CONNECTION_TERM = 4;
-    public static final String SERVICE_MSG_CONNECTION_TERM_TEXT = "Connection terminated from server. Closing clipboard sharing session.";
+    public static final String SERVICE_MSG_CONNECTION_TERM_CLOSED_TEXT = "Connection terminated from server. Closing clipboard sharing session.";
+    public static final String SERVICE_MSG_CONNECTION_TERM_TIMEOUT_TEXT = "Connection to server timed out. Closing clipboard sharing session.";
+    public static final String SERVICE_MSG_CONNECTION_TERM_IO_TEXT = "Error in connection to server. Closing clipboard sharing session.";
 
     public static final String SERVICE_COMMAND_KEY = "service_cmd";
     public static final String SERVICE_COMMAND_SETIP_KEY = "service_cmd_setip";
@@ -36,9 +38,9 @@ public class Constants {
     public static final int SERVICE_COMMAND_VAL_STOP = 4;
 
     public static final int CONNECTION_READ_TIMEOUT_S = 10;
-    public static final String CONNECTION_ALIVE_MSG = "ALIVE";
-    public static final String CONNECTION_END_MSG = "BYE";
-    public static final String CONNECTION_DATA_MSG = "DATA";
+    public static final char CONNECTION_ALIVE_MSG = 0x23;
+    public static final char CONNECTION_END_MSG = 0x34;
+    public static final char CONNECTION_DATA_MSG = 0x45;
 
     public static final String SERVICE_STATUS_BR_INTENT_NAME = "com.clipshare.csclientservice.status";
     public static final String SERVICE_STATUS_KEY = "service_status";

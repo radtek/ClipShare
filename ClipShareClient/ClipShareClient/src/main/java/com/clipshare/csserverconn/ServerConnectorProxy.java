@@ -4,7 +4,6 @@ import com.clipshare.common.Constants;
 import com.clipshare.csclientservice.CSClientService;
 import com.clipshare.csclientui.CSClientMain;
 
-import android.app.Service;
 import android.content.*;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,7 +11,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.util.Log;
 import android.widget.Toast;
 
 public class ServerConnectorProxy {
@@ -129,7 +127,8 @@ public class ServerConnectorProxy {
                 case Constants.SERVICE_MSG_VAL_ERROR: String errorMsg = message.getData().getBundle(Constants.SERVICE_MSG_EXTRAS_KEY).getString(Constants.SERVICE_MSG_ERROR_KEY);
                                                       Toast.makeText(parentActivity.getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
                                                       break;
-                case Constants.SERVICE_MSG_VAL_CONNECTION_TERM: Toast.makeText(parentActivity.getApplicationContext(), Constants.SERVICE_MSG_CONNECTION_TERM_TEXT, Toast.LENGTH_LONG).show();
+                case Constants.SERVICE_MSG_VAL_CONNECTION_TERM: String errorText = message.getData().getString(Constants.SERVICE_MSG_ERROR_KEY);
+                                                                Toast.makeText(parentActivity.getApplicationContext(), errorText, Toast.LENGTH_LONG).show();
                                                                 break;
 			}
 		}

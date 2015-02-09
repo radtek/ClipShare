@@ -40,7 +40,7 @@ public class ConnCreator implements Runnable {
 
 	}
 	
-	private void sendMessage(String mainKey, int mainVal, HashMap<String, String> extras) {
+	public static void sendMessage(Messenger messenger, String mainKey, int mainVal, HashMap<String, String> extras) {
 		Message message = Message.obtain();
 		
 		Bundle bundle = new Bundle();
@@ -105,12 +105,12 @@ public class ConnCreator implements Runnable {
             } else {
                 HashMap<String, String> errorMsgMap = new HashMap<String, String>();
                 errorMsgMap.put(Constants.SERVICE_MSG_ERROR_KEY, Constants.SERVICE_MSG_ERROR_HANDSHAKE_TEXT);
-                sendMessage(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_ERROR, errorMsgMap);
+                ConnCreator.sendMessage(messenger, Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_ERROR, errorMsgMap);
             }
         } catch (UnknownHostException uhe) {
 
         } catch (IOException ioe) {
-            sendMessage(Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND, null);
+            ConnCreator.sendMessage(messenger, Constants.SERVICE_MSG_KEY, Constants.SERVICE_MSG_VAL_HOST_NOT_FOUND, null);
         }
 
         if(connected) {
