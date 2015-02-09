@@ -75,6 +75,19 @@ DWORD ClipShareServerListener::CSServerSenderThread(LPVOID lpParam)
 {
 	SOCKET client = *(SOCKET *)lpParam;
 
+	while(!bServiceStopping)
+	{
+		if(send(client, &CONNECTION_ALIVE_MSG, sizeof(CONNECTION_ALIVE_MSG), 0) != SOCKET_ERROR)
+		{
+			Sleep(ALIVE_MSG_INTERVAL_SEC * 1000);
+			continue;
+		}
+		else
+		{
+			break;
+		}
+	}
+
 	SetEvent(hConnectionEndEvt);
 
 	return 1;
@@ -140,7 +153,7 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 
 	logger.LogMessage("Server waiting for incoming connections...");
 
-	while(!bServiceStopping)
+	while(!bServiceStopping && WaitForSingleObject(hServiceStopEvt, 0) != WAIT_OBJECT_0)
 	{
 		iSAClientLen = sizeof(saClient);
 		ZeroMemory((void *)&saClient, iSAClientLen);
@@ -173,13 +186,13 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 				HANDLE hWaitHandles[2] = {hServiceStopEvt, hConnectionEndEvt};
 				WaitForMultipleObjects(2, hWaitHandles, FALSE, INFINITE);
 
+				ossConnectionReceived.str(std::string());
+				ossConnectionReceived<<"Lost connection to: "<<inet_ntoa(saClient.sin_addr);
+				logger.LogMessage(ossConnectionReceived.str());
+
 				if(hConnectionEndEvt == INVALID_HANDLE_VALUE || WaitForSingleObject(hServiceStopEvt, 0) != WAIT_TIMEOUT)
 					break;
-			}
-
-			ossConnectionReceived.str(std::string());
-			ossConnectionReceived<<"Lost connection to: "<<inet_ntoa(saClient.sin_addr);
-			logger.LogMessage(ossConnectionReceived.str());
+			}			
 		}
 	}
 
