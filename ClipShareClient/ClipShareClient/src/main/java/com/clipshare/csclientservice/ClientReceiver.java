@@ -64,8 +64,6 @@ public class ClientReceiver implements Runnable {
                         continue;
                     } else if(inMsgType == Constants.CONNECTION_DATA_MSG) {
 
-                    } else if(inMsgType == Constants.CONNECTION_END_MSG) {
-
                     } else {
                         //
                     }

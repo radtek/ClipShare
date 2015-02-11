@@ -29,7 +29,6 @@ class ClipShareServerListener
 		static const char HANDSHAKE_MSG = 0x12;
 		static const char CONNECTION_ALIVE_MSG = 0x23;
 		static const char CONNECTION_DATA_MSG = 0x34;
-		static const char CONNECTION_END_MSG = 0x45;
 
 		HANDLE hServiceStopEvt;
 		HANDLE hConnectionEndEvt;

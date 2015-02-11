@@ -3,6 +3,7 @@ package com.clipshare.csclientservice;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
@@ -92,7 +93,7 @@ public class ConnCreator implements Runnable {
 
         return 0;
     }
-	
+
 	public void run() {
         boolean connected = false;
         clientSocket = new Socket();
@@ -126,7 +127,10 @@ public class ConnCreator implements Runnable {
 
             try {
                 stopSemaphore.acquire();
+                clientSocket.close();
             } catch (InterruptedException ie) {
+
+            } catch (IOException ioe) {
 
             }
         }

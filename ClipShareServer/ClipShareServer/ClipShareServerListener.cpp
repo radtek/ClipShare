@@ -130,10 +130,13 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 			}
 			else
 			{
-				if(inData != CONNECTION_ALIVE_MSG)
-					logger.LogMessage("Received unknown message from client. Closing clipboard sharing session.");
-				else
+				if(inData == CONNECTION_ALIVE_MSG)
 					continue;
+				else
+				{
+					logger.LogMessage("Received unknown message from client. Closing clipboard sharing session.");
+					break;
+				}
 			}
 		}
 		else
