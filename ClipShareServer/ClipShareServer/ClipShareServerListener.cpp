@@ -12,7 +12,6 @@ ClipShareServerListener::ClipShareServerListener(Logger *_logger)
 	logger = *_logger;
 	
 	hServiceStopEvt = NULL;
-	hConnectionEndEvt = NULL;
 	bServiceStopping = false;
 }
 
@@ -55,12 +54,20 @@ DWORD ClipShareServerListener::InitServerListenerWorker()
 		return 0;
 	}
 
-	hConnectionEndEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
-	if(!hConnectionEndEvt)
+	hSenderStopEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if(!hSenderStopEvt)
 	{
-		logger.LogMessage("Unable to create connection end event.");
+		logger.LogMessage("Unable to create sender thread stop event.");
 		return 0;
 	}
+	
+	hReceiverStopEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if(!hSenderStopEvt)
+	{
+		logger.LogMessage("Unable to create sender thread stop event.");
+		return 0;
+	}
+
 
 	logger.LogMessage("Server socket initialized. Will start listening for incoming connections.");
 	return 1;
@@ -101,7 +108,7 @@ DWORD ClipShareServerListener::CSServerSenderThread(LPVOID lpParam)
 		}
 	}
 
-	SetEvent(hConnectionEndEvt);
+	SetEvent(hSenderStopEvt);
 
 	return 1;
 }
@@ -157,7 +164,7 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 		}
 	}
 
-	SetEvent(hConnectionEndEvt);
+	SetEvent(hReceiverStopEvt);
 
 	return 1;
 }
@@ -230,24 +237,28 @@ DWORD ClipShareServerListener::CSServerListenerWorkerThread(LPVOID lpParam)
 
 			setsockopt(sockClient, SOL_SOCKET, SO_RCVTIMEO, (char *)&READ_TIMEOUT, sizeof(int));
 
-			ResetEvent(hConnectionEndEvt);
-
 			if(!ProcessClient(&sockClient))
 				logger.LogMessage("Error in creating the sender or receiver thread. Try connecting again. Going back to listening for connections.");
 			else
 			{
 				logger.LogMessage("Handshake complete, connection established.");
 
-				HANDLE hWaitHandles[2] = {hServiceStopEvt, hConnectionEndEvt};
-				WaitForMultipleObjects(2, hWaitHandles, FALSE, INFINITE);
+				ResetEvent(hSenderStopEvt);
+				ResetEvent(hReceiverStopEvt);
+
+				HANDLE hAllWaitHandles[3] = {hServiceStopEvt, hSenderStopEvt, hReceiverStopEvt};
+				WaitForMultipleObjects(3, hAllWaitHandles, FALSE, INFINITE);
 
 				closesocket(sockClient);
+
+				HANDLE hClientWaitHandles[2] = {hSenderStopEvt, hReceiverStopEvt};
+				WaitForMultipleObjects(2, hClientWaitHandles, TRUE, INFINITE);
 
 				ossConnectionReceived.str(std::string());
 				ossConnectionReceived<<"Lost connection to: "<<inet_ntoa(saClient.sin_addr);
 				logger.LogMessage(ossConnectionReceived.str());
 
-				if(hConnectionEndEvt == INVALID_HANDLE_VALUE || WaitForSingleObject(hServiceStopEvt, 0) != WAIT_TIMEOUT)
+				if(WaitForSingleObject(hServiceStopEvt, 0) != WAIT_TIMEOUT)
 					break;
 			}			
 		}
@@ -320,10 +331,9 @@ void ClipShareServerListener::CleanServerListener()
 	WSACleanup();
 	logger.LogMessage("Server socket closed.");
 
-	WaitForSingleObject(hConnectionEndEvt, INFINITE);
-
 	//what if the below part is executed before ServerListenerWorkerThread can check its handle and terminate?
 	CloseHandle(hServiceStopEvt);
-	CloseHandle(hConnectionEndEvt);
+	CloseHandle(hSenderStopEvt);
+	CloseHandle(hReceiverStopEvt);
 	logger.LogMessage("Handles cleaned up.");
 }

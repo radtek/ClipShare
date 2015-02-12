@@ -13,7 +13,7 @@ class ClipShareServerListener
 
 		DWORD InitServerListenerWorker();
 		bool ProcessClient(SOCKET *);
-		int PerformHandshake(SOCKET client);
+		int PerformHandshake(SOCKET);
 
 		static DWORD WINAPI ServerListenerThread(LPVOID);
 		static DWORD WINAPI ServerListenerWorkerThread(LPVOID);
@@ -31,7 +31,7 @@ class ClipShareServerListener
 		static const char CONNECTION_DATA_MSG = 0x34;
 
 		HANDLE hServiceStopEvt;
-		HANDLE hConnectionEndEvt;
+		HANDLE hSenderStopEvt, hReceiverStopEvt;
 		bool bServiceStopping;
 
 		static ClipShareServerListener *pServerListener;
