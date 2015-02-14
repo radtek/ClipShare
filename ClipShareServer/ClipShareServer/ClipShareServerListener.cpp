@@ -62,9 +62,9 @@ DWORD ClipShareServerListener::InitServerListenerWorker()
 	}
 	
 	hReceiverStopEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
-	if(!hSenderStopEvt)
+	if(!hReceiverStopEvt)
 	{
-		logger.LogMessage("Unable to create sender thread stop event.");
+		logger.LogMessage("Unable to create receiver thread stop event.");
 		return 0;
 	}
 

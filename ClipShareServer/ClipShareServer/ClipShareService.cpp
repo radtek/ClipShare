@@ -28,6 +28,7 @@ void ClipShareService::StopService()
 {
 	pServerListener->SetServiceStopEvt();
 
+	//instead of sleeping, have a mechanism to wait for other threads to end
 	Sleep(1000);
 
 	logger.LogMessage("Service shutting down.");
