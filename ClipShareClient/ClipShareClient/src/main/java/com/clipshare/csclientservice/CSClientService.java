@@ -3,6 +3,7 @@ package com.clipshare.csclientservice;
 import com.clipshare.common.Constants;
 
 import android.app.Service;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +17,8 @@ public class CSClientService extends Service {
 	private String ipAddress = null;
 	private Messenger serverMessenger = null;
 	private ConnCreator connCreator = null;
+
+    private ClipboardManager clipboardManager = null;
 
     private final Messenger commandMessenger = new Messenger(new ServiceCommandHandler());
 	
@@ -34,31 +37,39 @@ public class CSClientService extends Service {
 	}
 
     private synchronized void start() {
-        if(connCreator == null)
-            connCreator = new ConnCreator();
-        if(!connCreator.isRunning()) {
-            connCreator.setIp(ipAddress);
-            connCreator.setMessenger(serverMessenger);
-            connCreator.startThread();
-        }
+        if(clipboardManager == null)
+            clipboardManager = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 
-        Intent intent = new Intent(Constants.SERVICE_STATUS_BR_INTENT_NAME);
-        intent.putExtra(Constants.SERVICE_STATUS_KEY, 1);
-        sendBroadcast(intent);
+        if(clipboardManager != null) {
+            if (connCreator == null)
+                connCreator = new ConnCreator();
+            if (!connCreator.isRunning()) {
+                connCreator.setIp(ipAddress);
+                connCreator.setMessenger(serverMessenger);
+                connCreator.setClipboardManager(clipboardManager);
+                connCreator.startThread();
+            }
+
+            Intent intent = new Intent(Constants.SERVICE_STATUS_BR_INTENT_NAME);
+            intent.putExtra(Constants.SERVICE_STATUS_KEY, 1);
+            sendBroadcast(intent);
+        }
     }
 
     //this is not called when the connection is terminated, hence connCreator is not set to null in that case. Need to fix.
     public void stop() {
-        if(connCreator != null) {
-            if (connCreator.isRunning())
-                connCreator.stopThread();
+        if(clipboardManager != null) {
+            if (connCreator != null) {
+                if (connCreator.isRunning())
+                    connCreator.stopThread();
 
-            connCreator = null;
+                connCreator = null;
+            }
+
+            Intent intent = new Intent(Constants.SERVICE_STATUS_BR_INTENT_NAME);
+            intent.putExtra(Constants.SERVICE_STATUS_KEY, 0);
+            sendBroadcast(intent);
         }
-
-        Intent intent = new Intent(Constants.SERVICE_STATUS_BR_INTENT_NAME);
-        intent.putExtra(Constants.SERVICE_STATUS_KEY, 0);
-        sendBroadcast(intent);
     }
 	
 	@Override

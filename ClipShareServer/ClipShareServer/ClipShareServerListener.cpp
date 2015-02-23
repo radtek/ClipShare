@@ -2,6 +2,7 @@
 #include <WS2tcpip.h>
 #include <Shlwapi.h>
 #include <sstream>
+#include <algorithm>
 
 #include "ClipShareServerListener.h"
 
@@ -139,6 +140,38 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 			{
 				if(inData == CONNECTION_ALIVE_MSG)
 					continue;
+				else if(inData == CONNECTION_DATA_MSG)
+				{
+					int iDataLength = 0;
+					if(recv(client, (char *)&iDataLength, sizeof(iDataLength), 0) != SOCKET_ERROR)			
+					{
+						/*char *szData = new char[iDataLength + 1];
+						std::fill(szData, szData + iDataLength + 1, '\0');
+
+						char cCurChar;
+						int iDataIndex;
+						for(iDataIndex = 0;iDataIndex < iDataLength;iDataIndex++)
+							if(recv(client, &cCurChar, sizeof(cCurChar), 0) != SOCKET_ERROR)
+								szData[iDataIndex] = cCurChar;
+							else
+								break;
+
+						if(iDataIndex != iDataLength)
+							logger.LogMessage("Error in reading clipboard data from client.");
+						else
+							logger.LogMessage(szData);
+
+						delete[] szData;*/
+						std::ostringstream p;
+						p<<iDataLength;
+						logger.LogMessage(p.str());
+						break;
+					}
+					else
+					{
+						logger.LogMessage("Error in reading length of data from client.");
+					}
+				}
 				else
 				{
 					logger.LogMessage("Received unknown message from client. Closing clipboard sharing session.");

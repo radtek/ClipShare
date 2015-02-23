@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import android.content.ClipboardManager;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Messenger;
@@ -32,6 +33,8 @@ public class ConnCreator implements Runnable {
 	private Thread connCreatorThread = null;
     private Thread senderThread = null;
     private Thread receiverThread = null;
+
+    private ClipboardManager clipboardManager = null;
 
     public static boolean DISCONNECTING = false;
 
@@ -118,7 +121,7 @@ public class ConnCreator implements Runnable {
             Semaphore stopSemaphore = new Semaphore(0);
 
             if (clientSocket.isConnected()) {
-                senderThread = new Thread(new ClientSender(clientSocket, messenger, stopSemaphore));
+                senderThread = new Thread(new ClientSender(clientSocket, messenger, stopSemaphore, clipboardManager));
                 senderThread.start();
 
                 receiverThread = new Thread(new ClientReceiver(clientSocket, messenger, stopSemaphore));
@@ -146,6 +149,10 @@ public class ConnCreator implements Runnable {
 	public void setMessenger(Messenger msngr) {
 		messenger = msngr;
 	}
+
+    public void setClipboardManager(ClipboardManager clipManager) {
+        clipboardManager = clipManager;
+    }
 
 	public synchronized void startThread() {
         DISCONNECTING = false;
