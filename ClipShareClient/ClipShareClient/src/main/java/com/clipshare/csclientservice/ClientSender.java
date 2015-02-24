@@ -28,6 +28,18 @@ public class ClientSender implements Runnable {
         clipboardManager = clipManager;
     }
 
+    private void sendClipboardData(String clipData, PrintWriter clientSender) {
+        StringBuilder clipDataBuilder = new StringBuilder();
+
+        clipDataBuilder.append(Constants.CONNECTION_DATA_MSG);
+        clipDataBuilder.append(Constants.CLIPDATA_LENGTH_DELIMITER);
+        clipDataBuilder.append(clipData.length());
+        clipDataBuilder.append(Constants.CLIPDATA_LENGTH_DELIMITER);
+        clipDataBuilder.append(clipData);
+
+        clientSender.print(clipDataBuilder.toString());
+    }
+
     public void run() {
         try {
             final PrintWriter clientSender = new PrintWriter(new OutputStreamWriter(client.getOutputStream()));
@@ -40,11 +52,8 @@ public class ClientSender implements Runnable {
                             ClipData.Item textItem = clipboardManager.getPrimaryClip().getItemAt(0);
                             String text = textItem.getText().toString();
 
-                            if(text != null && text.length() > 0) {
-                                clientSender.print(Constants.CONNECTION_DATA_MSG);
-                                clientSender.print(text.length());
-                                clientSender.print(text);
-                            }
+                            if(text != null && text.length() > 0)
+                                sendClipboardData(text, clientSender);
                         }
                     }
                 }

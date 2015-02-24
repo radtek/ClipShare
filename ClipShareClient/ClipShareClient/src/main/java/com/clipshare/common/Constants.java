@@ -41,6 +41,7 @@ public class Constants {
     public static final int CONNECTION_ALIVE_MSG_INTERVAL_S = 5;
     public static final char CONNECTION_ALIVE_MSG = 0x23;
     public static final char CONNECTION_DATA_MSG = 0x34;
+    public static final char CLIPDATA_LENGTH_DELIMITER = 'L';
 
     public static final String SERVICE_STATUS_BR_INTENT_NAME = "com.clipshare.csclientservice.status";
     public static final String SERVICE_STATUS_KEY = "service_status";

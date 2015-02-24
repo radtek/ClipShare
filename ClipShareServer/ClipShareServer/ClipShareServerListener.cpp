@@ -127,11 +127,11 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 
 	while(!bServiceStopping)
 	{
-		int recvCode = recv(client, &inData, sizeof(inData), 0);
+		int iRecvCode = recv(client, &inData, sizeof(inData), 0);
 
-		if(recvCode != SOCKET_ERROR)
+		if(iRecvCode != SOCKET_ERROR)
 		{
-			if(recvCode == 0)
+			if(iRecvCode == 0)
 			{
 				logger.LogMessage("Connection to client closed. Closing clipboard sharing session.");
 				break;
@@ -143,33 +143,70 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 				else if(inData == CONNECTION_DATA_MSG)
 				{
 					int iDataLength = 0;
-					if(recv(client, (char *)&iDataLength, sizeof(iDataLength), 0) != SOCKET_ERROR)			
+					char cDelim;
+					bool bContinue = true;
+
+					if(recv(client, &cDelim, sizeof(char), 0) != SOCKET_ERROR && cDelim == 'L')
 					{
-						/*char *szData = new char[iDataLength + 1];
-						std::fill(szData, szData + iDataLength + 1, '\0');
-
+						char szDataLengthBuf[100] = {'\0'};
 						char cCurChar;
-						int iDataIndex;
-						for(iDataIndex = 0;iDataIndex < iDataLength;iDataIndex++)
-							if(recv(client, &cCurChar, sizeof(cCurChar), 0) != SOCKET_ERROR)
-								szData[iDataIndex] = cCurChar;
-							else
+						int iBufIndex = 0;
+						do
+						{
+							iRecvCode = recv(client, &cCurChar, sizeof(char), 0);
+
+							if(iRecvCode == SOCKET_ERROR || cCurChar == 'L')
 								break;
+							szDataLengthBuf[iBufIndex++] = cCurChar;
+						}while(iBufIndex < 100);
 
-						if(iDataIndex != iDataLength)
-							logger.LogMessage("Error in reading clipboard data from client.");
-						else
-							logger.LogMessage(szData);
+						if(iRecvCode == SOCKET_ERROR || iBufIndex >= 100)
+						{
+							logger.LogMessage("Error in getting length of data from client.");
+							bContinue = false;
+							break;
+						}
 
-						delete[] szData;*/
-						std::ostringstream p;
-						p<<iDataLength;
-						logger.LogMessage(p.str());
-						break;
+						std::string sDataBuf(szDataLengthBuf, iBufIndex);
+						iDataLength = std::stoi(sDataBuf);
+
+						if(iDataLength > 0)
+						{
+							char *szData = new char[iDataLength + 1];
+							std::fill(szData, szData + iDataLength + 1, '\0');
+
+							int iDataIndex;
+							for(iDataIndex = 0;iDataIndex < iDataLength;iDataIndex++)
+								if(recv(client, &cCurChar, sizeof(cCurChar), 0) != SOCKET_ERROR)
+									szData[iDataIndex] = cCurChar;
+								else
+									break;
+
+							if(iDataIndex != iDataLength)
+							{
+								logger.LogMessage("Error in reading clipboard data from client.");
+								bContinue = false;
+							}
+							else
+							{
+								std::ostringstream ossClipData;
+								ossClipData<<"Received clipboard data from client: "<<szData;
+								logger.LogMessage(ossClipData.str());
+							}
+
+							delete[] szData;
+						}
 					}
 					else
 					{
-						logger.LogMessage("Error in reading length of data from client.");
+						logger.LogMessage("Error in getting data length delimiter.");
+						bContinue = false;
+					}
+
+					if(!bContinue)
+					{
+						logger.LogMessage("An error occurred in data transfer. Closing clipboard sharing session.");
+						break;
 					}
 				}
 				else
