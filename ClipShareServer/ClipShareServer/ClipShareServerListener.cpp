@@ -21,7 +21,7 @@ void ClipShareServerListener::SetServiceStopEvt()
 	SetEvent(hServiceStopEvt);
 }
 
-DWORD ClipShareServerListener::InitServerListenerWorker()
+int ClipShareServerListener::InitServerListenerWorker()
 {
 	WSADATA wsaData;
 	struct sockaddr_in saServer;
@@ -114,6 +114,41 @@ DWORD ClipShareServerListener::CSServerSenderThread(LPVOID lpParam)
 	return 1;
 }
 
+int ClipShareServerListener::PostToClipboard(std::string sClipText)
+{
+	BOOL bClipRet = OpenClipboard(NULL);
+	if(!bClipRet)
+	{
+		logger.LogMessage("Unable to open clipboard for posting data.");
+		return 1;
+	}
+
+	bClipRet = EmptyClipboard();
+	if(!bClipRet)
+	{
+		logger.LogMessage("Unable to empty clipboard.");
+		return 1;
+	}
+
+	int iTextLength = sClipText.length();
+	HGLOBAL hTextBuffer = GlobalAlloc(GMEM_FIXED, iTextLength + 1);
+	ZeroMemory(hTextBuffer, iTextLength + 1);
+	memcpy((void *)hTextBuffer, (void *)sClipText.c_str(), iTextLength);
+
+	HANDLE hClipData = SetClipboardData(CF_TEXT, hTextBuffer);
+
+	GlobalFree(hTextBuffer);
+	CloseClipboard();
+	
+	if(hClipData == NULL)
+	{
+		logger.LogMessage("Unable to set the clipboard data.");
+		return 1;
+	}
+
+	return 0;
+}
+
 DWORD WINAPI ClipShareServerListener::ServerReceiverThread(LPVOID lpParam)
 {
 	return pServerListener->CSServerReceiverThread(lpParam);
@@ -192,6 +227,9 @@ DWORD ClipShareServerListener::CSServerReceiverThread(LPVOID lpParam)
 								std::ostringstream ossClipData;
 								ossClipData<<"Received clipboard data from client: "<<szData;
 								logger.LogMessage(ossClipData.str());
+
+								if(PostToClipboard(std::string(szData)))
+									logger.LogMessage("An error occurred while posting data to the clipboard. No data posted.");
 							}
 
 							delete[] szData;

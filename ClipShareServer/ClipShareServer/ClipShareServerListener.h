@@ -11,9 +11,10 @@ class ClipShareServerListener
 		SOCKET sockServer;
 		Logger logger;
 
-		DWORD InitServerListenerWorker();
+		int InitServerListenerWorker();
 		bool ProcessClient(SOCKET *);
 		int PerformHandshake(SOCKET);
+		int PostToClipboard(std::string);
 
 		static DWORD WINAPI ServerListenerThread(LPVOID);
 		static DWORD WINAPI ServerListenerWorkerThread(LPVOID);
