@@ -17,3 +17,10 @@ Once a connection is established between the client and server, both are locked.
 Any text copied to the clipboard on the server machine would be immediately transferred to the Android device and copied to its clipboard, with a status bar notification informing the user of the same. Similarly, any text copied to the clipboard on the Android device would be sent to the server and copied to the Windows clipboard, with a note of the same being made in the server service's log file.
 
 The application works as a background service on the Android device. Clipboard updates and connection losses will be informed to the user via notifications. The user can terminate the connection anytime from the application UI.
+
+
+# NOTE #
+1. I have currently paused work on this project and will be resuming in a few weeks. This is mainly because I faced problems with how Windows services can access application clipboard data and thus will have to look into a different approach for Windows suppport.
+2. This project will very soon be moved to GitHub.
+
+For any other information, please contact me at shahsunny712@gmail.com
