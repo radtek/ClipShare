@@ -3,8 +3,7 @@
 This is an Android application project for sharing clipboard text between an Android device and a Personal Computer (PC). It will have two components:
 
 # NOTE #
-1. I have currently paused work on this project and will be resuming in a few weeks. This is mainly because I faced problems with how Windows services can access application clipboard data and thus will have to look into a different approach for Windows suppport.
-2. This project will very soon be moved to GitHub.
+I have currently paused work on this project and will be resuming in a few weeks. This is mainly because I faced problems with how Windows services can access application clipboard data and thus will have to look into a different approach for Windows suppport.
 
 For any other information, please contact me at shahsunny712@gmail.com
 
