@@ -1,7 +1,5 @@
 # NOTE #
-I have currently paused work on this project and will be resuming in a few weeks. This is mainly because I faced problems with how Windows services can access application clipboard data and thus will have to look into a different approach for Windows suppport.
-
-For any other information, please contact me at shahsunny712@gmail.com
+This project is currently inactive - I ran into some problems with clipboard access in Windows services (and I started grad school  ̿'̿'\̵͇̿̿\з=(•_•)=ε/̵͇̿̿/'̿'̿ ̿ ).
 
 # ABOUT #
 
