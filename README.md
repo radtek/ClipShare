@@ -1,5 +1,5 @@
 # NOTE #
-This project is currently inactive - I ran into some problems with clipboard access in Windows services (and I started grad school  ̿'̿'\̵͇̿̿\з=(•_•)=ε/̵͇̿̿/'̿'̿ ̿ ).
+This project is currently on hold - I ran into some problems with clipboard access in Windows services which I need to debug in more depth (and I started grad school  ̿'̿'\̵͇̿̿\з=(•_•)=ε/̵͇̿̿/'̿'̿ ̿ ).
 
 # ABOUT #
 
